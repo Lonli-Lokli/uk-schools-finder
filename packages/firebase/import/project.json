@@ -1,0 +1,9 @@
+{
+  "name": "firebase-import",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/firebase/import/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project firebase-import --web",
+  "targets": {}
+}

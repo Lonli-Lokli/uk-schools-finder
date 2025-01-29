@@ -1,0 +1,16 @@
+{
+  "extensions": {
+    "firebase-web-authn": "./node_modules/@firebase-web-authn/extension"
+  },
+  "hosting": [
+    {
+      "target":   "...",
+      "rewrites": [
+        {
+          "source":   "/firebase-web-authn-api",
+          "function": "ext-firebase-web-authn-api"
+        }
+      ]
+    }
+  ]
+}

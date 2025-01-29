@@ -1,0 +1,1 @@
+export { uploadSchoolsData } from './lib/firebase-import';

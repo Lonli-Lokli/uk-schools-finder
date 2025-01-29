@@ -1,0 +1,9 @@
+{
+  "name": "firebase-extensions",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/firebase/extensions/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+  }
+}

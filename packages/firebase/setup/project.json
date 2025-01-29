@@ -1,0 +1,9 @@
+{
+  "name": "firebase-setup",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/firebase/setup/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project firebase-setup --web",
+  "targets": {}
+}
