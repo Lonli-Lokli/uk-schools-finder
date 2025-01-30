@@ -1,4 +1,3 @@
-import { z } from 'zod';
 import { doc, Firestore, writeBatch } from 'firebase/firestore';
 import { ImportParams, ImportResult, BATCH_SIZE, parseAndValidateCSV } from './shapes';
 import { KS4DestinationsSchema } from './schemas/ks4-destinations.schema';
