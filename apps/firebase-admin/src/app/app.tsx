@@ -1,6 +1,6 @@
 import { Layout, Menu, Typography } from 'antd';
 import { DatabaseOutlined, SettingOutlined } from '@ant-design/icons';
-import { SchoolsImportPanel } from '../components/schools-import';
+import { ImportPanel } from '../components/imports/import-panel';
 import { SignIn } from '@lonli-lokli/sign-in';
 import 'antd/dist/reset.css';
 
@@ -27,7 +27,7 @@ export function App() {
         >
           <Menu
             mode="inline"
-            defaultSelectedKeys={['schools']}
+            defaultSelectedKeys={['data']}
             defaultOpenKeys={['data']}
             style={{ height: '100%', borderRight: 0 }}
           >
@@ -36,7 +36,7 @@ export function App() {
               icon={<DatabaseOutlined />} 
               title="Data Management"
             >
-              <Menu.Item key="schools">Schools Import</Menu.Item>
+              <Menu.Item key="imports">Data Import</Menu.Item>
             </Menu.SubMenu>
             <Menu.SubMenu 
               key="settings" 
@@ -50,8 +50,8 @@ export function App() {
         
         <Layout className="ml-[240px] lg:ml-[240px] p-4 lg:p-6">
           <Content>
-            <Title level={2} className="mb-6">Data Management</Title>
-            <SchoolsImportPanel />
+            <Title level={2} className="mb-6">Data Import</Title>
+            <ImportPanel />
           </Content>
         </Layout>
       </Layout>

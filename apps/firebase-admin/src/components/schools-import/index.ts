@@ -1,1 +1,0 @@
-export { SchoolsImportPanel } from './ui';

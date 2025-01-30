@@ -1,16 +1,14 @@
 import { doc, Firestore, writeBatch } from 'firebase/firestore';
-import { parseAndValidateCSV } from './schema';
 import { parse, format, isValid } from 'date-fns';
 import { geohashForLocation } from 'geofire-common';
 import proj4 from 'proj4';
-
-interface ImportResult {
-  success: boolean;
-  count: number;
-  errors?: string[];
-}
-
-const BATCH_SIZE = 500; // Firestore batch limit is 500
+import {
+  ImportResult,
+  BATCH_SIZE,
+  parseAndValidateCSV,
+  ImportParams,
+} from './shapes';
+import { SchoolRow, SchoolRowSchema } from './schemas/schools';
 
 // Define the OSGB36 (EPSG:27700) and WGS84 (EPSG:4326) projections
 proj4.defs(
@@ -19,60 +17,15 @@ proj4.defs(
 );
 proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs');
 
-const formatDate = (dateStr: string | null | undefined): string | null => {
-  if (!dateStr) return null;
-  try {
-    const parsedDate = parse(dateStr, 'dd-MM-yyyy', new Date());
-    if (!isValid(parsedDate)) return null;
-    return format(parsedDate, 'yyyy-MM-dd');
-  } catch {
-    return null;
-  }
-};
-
-const normalizeTypeId = (type: string): string =>
-  `type_${type.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
-
-const normalizePhaseId = (phase: string): string =>
-  `phase_${phase.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
-
-function convertToLatLong(easting: number, northing: number) {
-  try {
-    if (!easting || !northing) {
-      return { latitude: 0, longitude: 0 };
-    }
-
-    // Convert from OSGB36 to WGS84
-    const [longitude, latitude] = proj4('EPSG:27700', 'EPSG:4326', [
-      easting,
-      northing,
-    ]);
-
-    return {
-      latitude: Number(latitude.toFixed(6)),
-      longitude: Number(longitude.toFixed(6)),
-    };
-  } catch (error) {
-    console.error('Error converting coordinates:', error);
-    return { latitude: 0, longitude: 0 };
-  }
-}
-
-// Helper functions for generating consistent IDs
-function createCensusId(urn: string, date: string): string {
-  return `${urn}_${date.replace(/[^0-9]/g, '')}`;
-}
-
-function createInspectionId(urn: string, date: string): string  {
-  return `${urn}_${date.replace(/[^0-9]/g, '')}`;
-}
-
-export async function firebaseImport(
-  db: Firestore,
-  csvData: string
+export async function importSchools(
+  params: ImportParams
 ): Promise<ImportResult> {
+  const { db, csvData } = params;
   try {
-    const { valid: validRows, errors } = await parseAndValidateCSV(csvData);
+    const { valid: validRows, errors } = await parseAndValidateCSV<SchoolRow>(
+      csvData,
+      SchoolRowSchema as any
+    );
 
     if (errors.length > 0) {
       console.error('Validation errors:', errors);
@@ -207,7 +160,10 @@ export async function firebaseImport(
 
         // Create inspection document
         if (row.DateOfLastInspectionVisit) {
-          const inspectionId = createInspectionId(urn, row.DateOfLastInspectionVisit);
+          const inspectionId = createInspectionId(
+            urn,
+            row.DateOfLastInspectionVisit
+          );
           const inspectionRef = doc(db, 'school-inspections', inspectionId);
           batch.set(inspectionRef, {
             schoolUrn: urn,
@@ -221,62 +177,70 @@ export async function firebaseImport(
 
         // Create main school document
         const schoolRef = doc(db, 'schools', urn);
-        batch.set(schoolRef, {
+        const schoolData = {
           // Basic info
           urn: urn,
-          name: row.EstablishmentName,
-          establishmentNumber: row.EstablishmentNumber,
-          ukprn: row.UKPRN,
-          feheId: row.FEHEIdentifier,
-          chNumber: row.CHNumber,
+          name: row.EstablishmentName || null,
+          establishmentNumber: row.EstablishmentNumber || null,
+          ukprn: row.UKPRN || null,
+          feheId: row.FEHEIdentifier || null,
+          chNumber: row.CHNumber || null,
 
           // References
-          typeId,
-          phaseId,
-          locationId,
-          trustId,
+          typeId: typeId || null,
+          phaseId: phaseId || null,
+          locationId: locationId || null,
+          trustId: trustId || null,
+          leaCode: row['LA (code)'] ? row['LA (code)'].toString() : null,
 
           // Status
-          status: row['EstablishmentStatus (name)'],
+          status: row['EstablishmentStatus (name)'] || null,
           openDate: formatDate(row.OpenDate),
           closeDate: formatDate(row.CloseDate),
-          openReason: row['ReasonEstablishmentOpened (name)'],
-          closeReason: row['ReasonEstablishmentClosed (name)'],
+          openReason: row['ReasonEstablishmentOpened (name)'] || null,
+          closeReason: row['ReasonEstablishmentClosed (name)'] || null,
 
-          // Characteristics (relatively static data)
-          gender: row['Gender (name)'],
-          boarders: row['Boarders (name)'],
-          nurseryProvision: row['NurseryProvision (name)'],
-          officialSixthForm: row['OfficialSixthForm (name)'],
-          capacity: row.SchoolCapacity,
-          specialClasses: row['SpecialClasses (name)'],
+          // Characteristics
+          gender: row['Gender (name)'] || null,
+          boarders: row['Boarders (name)'] || null,
+          nurseryProvision: row['NurseryProvision (name)'] || null,
+          officialSixthForm: row['OfficialSixthForm (name)'] || null,
+          capacity: row.SchoolCapacity || null,
+          specialClasses: row['SpecialClasses (name)'] || null,
 
-          // Contact info including current headteacher
+          // Contact info
           contact: {
-            telephone: row.TelephoneNum,
-            website: row.SchoolWebsite,
-            headTeacher: row.HeadLastName
-              ? {
-                  title: row['HeadTitle (name)'],
-                  firstName: row.HeadFirstName,
-                  lastName: row.HeadLastName,
-                  jobTitle: row.HeadPreferredJobTitle,
-                }
-              : null,
+            telephone: row.TelephoneNum || null,
+            website: row.SchoolWebsite || null,
+            headTeacher: row.HeadLastName ? {
+              title: row['HeadTitle (name)'] || null,
+              firstName: row.HeadFirstName || null,
+              lastName: row.HeadLastName || null,
+              jobTitle: row.HeadPreferredJobTitle || null,
+            } : null,
           },
 
           // Additional fields
-          senNoStat: row.SENNoStat,
-          propsName: row.PropsName,
-          country: row['Country (name)'],
-          siteName: row.SiteName,
-          qabName: row['QABName (name)'],
-          establishmentAccredited: row['EstablishmentAccredited (name)'],
-          qabReport: row.QABReport,
-          accreditationExpiryDate: row.AccreditationExpiryDate,
+          senNoStat: row.SENNoStat || null,
+          propsName: row.PropsName || null,
+          country: row['Country (name)'] || null,
+          siteName: row.SiteName || null,
+          qabName: row['QABName (name)'] || null,
+          establishmentAccredited: row['EstablishmentAccredited (name)'] || null,
+          qabReport: row.QABReport || null,
+          accreditationExpiryDate: row.AccreditationExpiryDate || null,
 
           lastChanged: formatDate(row.LastChangedDate),
+        };
+
+        // Remove any undefined values
+        Object.keys(schoolData).forEach(key => {
+          if (schoolData[key] === undefined) {
+            delete schoolData[key];
+          }
         });
+
+        batch.set(schoolRef, schoolData);
       }
 
       await batch.commit();
@@ -309,7 +273,55 @@ export async function firebaseImport(
 }
 
 // Helper function to normalize trust ID
-function normalizeTrustId(name: string | undefined): string | undefined {
-  if (!name) return undefined;
+function normalizeTrustId(name: string | undefined): string | null {
+  if (!name) return null;
   return name.toLowerCase().replace(/[^a-z0-9]/g, '-');
+}
+
+const formatDate = (dateStr: string | null | undefined): string | null => {
+  if (!dateStr) return null;
+  try {
+    const parsedDate = parse(dateStr, 'dd-MM-yyyy', new Date());
+    if (!isValid(parsedDate)) return null;
+    return format(parsedDate, 'yyyy-MM-dd');
+  } catch {
+    return null;
+  }
+};
+
+const normalizeTypeId = (type: string): string =>
+  `type_${type.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+
+const normalizePhaseId = (phase: string): string =>
+  `phase_${phase.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
+
+function convertToLatLong(easting: number, northing: number) {
+  try {
+    if (!easting || !northing) {
+      return { latitude: 0, longitude: 0 };
+    }
+
+    // Convert from OSGB36 to WGS84
+    const [longitude, latitude] = proj4('EPSG:27700', 'EPSG:4326', [
+      easting,
+      northing,
+    ]);
+
+    return {
+      latitude: Number(latitude.toFixed(6)),
+      longitude: Number(longitude.toFixed(6)),
+    };
+  } catch (error) {
+    console.error('Error converting coordinates:', error);
+    return { latitude: 0, longitude: 0 };
+  }
+}
+
+// Helper functions for generating consistent IDs
+function createCensusId(urn: string, date: string): string {
+  return `${urn}_${date.replace(/[^0-9]/g, '')}`;
+}
+
+function createInspectionId(urn: string, date: string): string {
+  return `${urn}_${date.replace(/[^0-9]/g, '')}`;
 }

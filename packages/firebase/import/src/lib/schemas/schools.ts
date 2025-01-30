@@ -1,5 +1,4 @@
 import { z, ZodNumber, ZodOptional } from 'zod';
-import { csv2json } from 'csv42';
 
 // Helper for optional string fields with default empty string
 const numericString = <T extends ZodNumber | ZodOptional<ZodNumber>>(
@@ -192,24 +191,6 @@ export const SchoolRowSchema = z.object({
   AccreditationExpiryDate: optionalString(),
 });
 
-export function parseAndValidateCSV(  content: string
-) {
-  return new Promise<{ valid: SchoolRow[]; errors: any[] }>((resolve) => {
-    const valid: SchoolRow[] = [];
-    const errors: any[] = [];
 
-    const result = csv2json(content);
-    result.forEach((row, index) => {
-      try {
-        const validatedRow = SchoolRowSchema.parse(row);
-        valid.push(validatedRow);
-      } catch (error) {
-        errors.push({ row: index + 1, error });
-      }
-    });
-
-    resolve({ valid: valid.slice(0, 1000), errors });
-  });
-}
 
 export type SchoolRow = z.infer<typeof SchoolRowSchema>;
