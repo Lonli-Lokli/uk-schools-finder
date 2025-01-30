@@ -25,7 +25,7 @@ export async function importRegions(
       return {
         success: false,
         count: 0,
-        errors: errors.map((e) => e.message),
+        errors: errors.map((e) => `Row ${e.row}: ${e.error.message}`),
       };
     }
 

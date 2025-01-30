@@ -25,7 +25,7 @@ export function ImportFile({
   const file = useUnit(model.$file);
   const isProcessing = useUnit(model.$isProcessing);
   const message = useUnit(model.$message);
-  const [year, setYear] = useState<string>(new Date().getFullYear().toString());
+  const [year, setYear] = useState<string>('2024');
 
   const handleFileChange = (info: UploadChangeParam<UploadFile<File>>) => {
     if (info.file.status !== 'removed') {

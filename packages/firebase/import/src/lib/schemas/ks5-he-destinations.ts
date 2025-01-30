@@ -1,13 +1,26 @@
 import { z } from 'zod';
 
-const numberOrNull = z.string().or(z.number())
-  .transform(val => val === '' ? null : Number(val))
+const ifEmpty = (val: string | number | undefined | null) =>
+  val === '' || val === undefined || val === null ? null : Number(val);
+const numberOrNull = z
+  .string()
+  .or(z.number())
+  .or(z.undefined())
+  .or(z.null())
+  .transform(ifEmpty)
   .nullable();
 
 export const KS5HEDestinationsSchema = z.object({
-  URN: z.string().or(z.number()).transform(val => val.toString()),
-  RECTYPE: z.string().or(z.number()).transform(val => val.toString()),
-  
+  URN: z
+    .string()
+    .or(z.number())
+    .or(z.null())
+    .transform((val) => val?.toString() ?? ''),
+  RECTYPE: z
+    .string()
+    .or(z.number())
+    .transform((val) => val.toString()),
+
   // University groups
   ALL_OXBRIDGE: numberOrNull,
   ALL_RUSSELL: numberOrNull,

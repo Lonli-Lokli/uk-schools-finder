@@ -16,7 +16,7 @@ export async function importKS5HEDestinations(
 ): Promise<ImportResult> {
   const { db, csvData, year } = params;
   try {
-    const { valid: rows, errors } =
+    const { valid: parsedRows, errors } =
       await parseAndValidateCSV<KS5HEDestinationsRow>(
         csvData,
         KS5HEDestinationsSchema as any
@@ -26,11 +26,13 @@ export async function importKS5HEDestinations(
       return {
         success: false,
         count: 0,
-        errors: errors.map((e) => e.message),
+        errors: errors.map((e) => `Row ${e.row}: ${e.error.message}`),
       };
     }
 
     let processedCount = 0;
+    // Skip non-school records
+    const rows = parsedRows.filter((row) => row.URN && row.RECTYPE === '1');
     const totalBatches = Math.ceil(rows.length / BATCH_SIZE);
 
     for (let i = 0; i < rows.length; i += BATCH_SIZE) {
@@ -38,7 +40,7 @@ export async function importKS5HEDestinations(
       const batchRows = rows.slice(i, i + BATCH_SIZE);
 
       for (const row of batchRows) {
-        if (!row.URN || row.RECTYPE !== '1') continue; // Skip non-school records
+        
 
         const destinationId = `${row.URN}_${year}`;
         const destinationRef = doc(db, 'school-he-destinations', destinationId);

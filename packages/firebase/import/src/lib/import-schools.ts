@@ -32,7 +32,7 @@ export async function importSchools(
       return {
         success: false,
         count: 0,
-        errors: errors.map((e: any) => e.message),
+        errors: errors.map(e => `Row ${e.row}: ${e.error.message}`),
       };
     }
 
@@ -235,8 +235,8 @@ export async function importSchools(
 
         // Remove any undefined values
         Object.keys(schoolData).forEach(key => {
-          if (schoolData[key] === undefined) {
-            delete schoolData[key];
+          if (schoolData[key as keyof typeof schoolData] === undefined) {
+            delete schoolData[key as keyof typeof schoolData];
           }
         });
 
