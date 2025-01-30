@@ -1,4 +1,4 @@
-import { doc, Firestore, writeBatch } from 'firebase/firestore';
+import { doc, writeBatch, arrayUnion } from 'firebase/firestore';
 import {
   KS5DestinationsSchema,
   KS5DestinationsRow,
@@ -25,7 +25,7 @@ export async function importKS5Destinations(
       return {
         success: false,
         count: 0,
-        errors: errors.map((e) => e.message),
+        errors: errors.map((e) => `Row ${e.row}: ${e.error.message}`),
       };
     }
 
@@ -43,48 +43,47 @@ export async function importKS5Destinations(
         const destinationRef = doc(db, 'school-destinations', destinationId);
 
         batch.set(destinationRef, {
-          schoolUrn: row.URN,
+          urn: row.URN,
           year,
-          cohort: {
-            total: Number(row.TOT_COHORT) || 0,
-            disadvantaged: Number(row.TOT_COHORT_DIS) || 0,
-            nonDisadvantaged: Number(row.TOT_COHORT_NONDIS) || 0,
+          total: {
+            all: createDestinationStats(row, 'TOT'),
+            disadvantaged: createDestinationStats(row, 'TOT_DIS'),
+            nonDisadvantaged: createDestinationStats(row, 'TOT_NONDIS'),
           },
-          destinations: {
-            education: {
-              total: Number(row.TOT_EDUCATION) || 0,
-              percentage: Number(row.TOT_EDUCATIONPER) || 0,
-              he: {
-                total: Number(row.TOT_HE) || 0,
-                percentage: Number(row.TOT_HEPER) || 0,
-              },
-              fe: {
-                total: Number(row.TOT_FE) || 0,
-                percentage: Number(row.TOT_FEPER) || 0,
-              },
-              other: {
-                total: Number(row.TOT_OTHER_EDU) || 0,
-                percentage: Number(row.TOT_OTHER_EDUPER) || 0,
-              },
-            },
-            employment: {
-              total: Number(row.TOT_EMPLOYMENT) || 0,
-              percentage: Number(row.TOT_EMPLOYMENTPER) || 0,
-              apprenticeships: {
-                total: Number(row.TOT_APPREN) || 0,
-                percentage: Number(row.TOT_APPRENPER) || 0,
-              },
-            },
-            notSustained: {
-              total: Number(row.TOT_NOT_SUSTAINED) || 0,
-              percentage: Number(row.TOT_NOT_SUSTAINEDPER) || 0,
-            },
-            notCaptured: {
-              total: Number(row.TOT_NOT_CAPTURED) || 0,
-              percentage: Number(row.TOT_NOT_CAPTUREDPER) || 0,
-            },
+          level3: {
+            all: createDestinationStats(row, 'L3'),
+            disadvantaged: createDestinationStats(row, 'L3_DIS'),
+            nonDisadvantaged: createDestinationStats(row, 'L3_NONDIS'),
+          },
+          level2: {
+            all: createDestinationStats(row, 'L2'),
+            disadvantaged: createDestinationStats(row, 'L2_DIS'),
+            nonDisadvantaged: createDestinationStats(row, 'L2_NONDIS'),
+          },
+          otherLevels: {
+            all: createDestinationStats(row, 'LALLOTH'),
+            disadvantaged: createDestinationStats(row, 'LALLOTH_DIS'),
+            nonDisadvantaged: createDestinationStats(row, 'LALLOTH_NONDIS'),
           },
         });
+
+        // Update stats document
+        const statsRef = doc(db, 'school-destination-stats', row.URN);
+        const newDestination = {
+          year,
+          higherEducation: row.TOT_HEPER,
+          furtherEducation: row.TOT_FEPER,
+          employment: row.TOT_EMPLOYMENTPER,
+        };
+
+        batch.set(
+          statsRef,
+          {
+            id: row.URN,
+            destinations: arrayUnion(newDestination),
+          },
+          { merge: true }
+        );
       }
 
       await batch.commit();
@@ -108,3 +107,57 @@ export async function importKS5Destinations(
     };
   }
 }
+
+const createDestinationStats = (
+  row: KS5DestinationsRow,
+  prefix:
+    | 'TOT'
+    | 'TOT_DIS'
+    | 'TOT_NONDIS'
+    | 'L3'
+    | 'L3_DIS'
+    | 'L3_NONDIS'
+    | 'L2'
+    | 'L2_DIS'
+    | 'L2_NONDIS'
+    | 'LALLOTH'
+    | 'LALLOTH_DIS'
+    | 'LALLOTH_NONDIS'
+) => ({
+  cohortSize: row[`${prefix}_COHORT` as keyof KS5DestinationsRow],
+  destinations: {
+    overall: row[`${prefix}_OVERALL` as keyof KS5DestinationsRow],
+    education: {
+      total: row[`${prefix}_EDUCATION` as keyof KS5DestinationsRow],
+      furtherEducation: row[`${prefix}_FE` as keyof KS5DestinationsRow],
+      higherEducation: row[`${prefix}_HE` as keyof KS5DestinationsRow],
+      other: row[`${prefix}_OTHER_EDU` as keyof KS5DestinationsRow],
+    },
+    employment: {
+      total: row[`${prefix}_EMPLOYMENT` as keyof KS5DestinationsRow],
+      apprenticeships: row[`${prefix}_APPREN` as keyof KS5DestinationsRow],
+    },
+    other: {
+      notSustained: row[`${prefix}_NOT_SUSTAINED` as keyof KS5DestinationsRow],
+      notCaptured: row[`${prefix}_NOT_CAPTURED` as keyof KS5DestinationsRow],
+    },
+  },
+  percentages: {
+    overall: row[`${prefix}_OVERALLPER` as keyof KS5DestinationsRow],
+    education: {
+      total: row[`${prefix}_EDUCATIONPER` as keyof KS5DestinationsRow],
+      furtherEducation: row[`${prefix}_FEPER` as keyof KS5DestinationsRow],
+      higherEducation: row[`${prefix}_HEPER` as keyof KS5DestinationsRow],
+      other: row[`${prefix}_OTHER_EDUPER` as keyof KS5DestinationsRow],
+    },
+    employment: {
+      total: row[`${prefix}_EMPLOYMENTPER` as keyof KS5DestinationsRow],
+      apprenticeships: row[`${prefix}_APPRENPER` as keyof KS5DestinationsRow],
+    },
+    other: {
+      notSustained:
+        row[`${prefix}_NOT_SUSTAINEDPER` as keyof KS5DestinationsRow],
+      notCaptured: row[`${prefix}_NOT_CAPTUREDPER` as keyof KS5DestinationsRow],
+    },
+  },
+});

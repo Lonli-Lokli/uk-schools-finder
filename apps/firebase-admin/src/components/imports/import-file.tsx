@@ -1,14 +1,20 @@
 import { UploadOutlined } from '@ant-design/icons';
-import { Button, Upload, Card, Alert } from 'antd';
+import { Button, Upload, Card, Alert, DatePicker, DatePickerProps } from 'antd';
 import { useUnit } from 'effector-react';
 import { ImportModel } from './model-factory';
 import { UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
 import { useState } from 'react';
+import dayjs from 'dayjs';
 
 interface ImportFileProps {
   title: string;
   model: ImportModel;
   yearRequired?: boolean;
+}
+
+const customFormat: DatePickerProps['format'] = (value) => {
+    const yearNum = value.year();
+          return `${yearNum-1}/${yearNum.toString().slice(-2)}`;
 }
 
 export function ImportFile({
@@ -19,7 +25,7 @@ export function ImportFile({
   const file = useUnit(model.$file);
   const isProcessing = useUnit(model.$isProcessing);
   const message = useUnit(model.$message);
-  const [year, setYear] = useState(new Date().getFullYear().toString());
+  const [year, setYear] = useState<string>(new Date().getFullYear().toString());
 
   const handleFileChange = (info: UploadChangeParam<UploadFile<File>>) => {
     if (info.file.status !== 'removed') {
@@ -56,12 +62,14 @@ export function ImportFile({
         {yearRequired && (
           <div>
             <label className="mr-2">Academic Year:</label>
-            <input
-              type="text"
-              value={year}
-              onChange={(e) => setYear(e.target.value)}
-              className="border rounded px-2 py-1"
-              placeholder="YYYY"
+            <DatePicker 
+              picker="year"
+              inputReadOnly
+              allowClear={false}
+              value={year ? dayjs(year) : null}
+              format={customFormat}
+              onChange={(date) => setYear(date ? date.year().toString() : '')}
+              className="w-32"
             />
           </div>
         )}
@@ -78,9 +86,6 @@ export function ImportFile({
           <Button icon={<UploadOutlined />}>Select CSV File</Button>
         </Upload>
 
-        {/* {file && (
-          <p className="text-sm text-gray-600">Selected file: {file.name}</p>
-        )} */}
 
         {message && (
           <Alert message={message.text} type={message.type} showIcon />

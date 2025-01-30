@@ -1,1 +1,1 @@
-export { KS5DestinationsImport } from './ui';
+export { KS5HEDestinationsImport } from './ui';
