@@ -6,7 +6,7 @@
   "scripts": {
     "nx": "nx",
     "graph": "nx graph",
-    "start:app": "nx run uk-schools-finder:serve",
+    "start:app": "nx run uk-schools-finder:start",
     "start:admin": "nx run firebase-admin:serve",
     "build": "nx build uk-schools-finder"
   },
