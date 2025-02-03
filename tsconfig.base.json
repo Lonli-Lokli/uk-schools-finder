@@ -17,11 +17,15 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "paths": {
+      "@lonli-lokli/app/components": ["apps/uk-schools-finder/src/components"],
       "@lonli-lokli/firebase-extensions": [
         "packages/firebase/extensions/src/index.ts"
       ],
       "@lonli-lokli/firebase/import": ["packages/firebase/import/src/index.ts"],
       "@lonli-lokli/firebase/setup": ["packages/firebase/setup/src/index.ts"],
+      "@lonli-lokli/firebase/setup-client": [
+        "packages/firebase/setup-client/src/index.ts"
+      ],
       "@lonli-lokli/sign-in": ["packages/sign-in/src/index.ts"]
     }
   },

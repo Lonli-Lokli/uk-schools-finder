@@ -1,0 +1,9 @@
+{
+  "name": "setup-client",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/firebase/setup-client/src",
+  "projectType": "library",
+  "tags": [],
+  "// targets": "to see all targets run: nx show project setup-client --web",
+  "targets": {}
+}

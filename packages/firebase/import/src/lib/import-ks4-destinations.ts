@@ -24,7 +24,6 @@ export async function importKS4Destinations(
   params: ImportParams
 ): Promise<ImportResult> {
   const { csvData, year, db, onProgress } = params;
-  const academicYear = `${Number(year) - 1}/${year.slice(-2)}`;
 
   try {
     onProgress({ details: `Parsing file...` });
@@ -32,7 +31,8 @@ export async function importKS4Destinations(
     const { valid: rows, errors } =
       await parseAndValidateCSV<KS4DestinationsRow>(
         csvData,
-        KS4DestinationsSchema as any
+        KS4DestinationsSchema as any,
+        (row) => ['1', '2'].includes(row.RECTYPE?.toString() ?? '')
       );
 
     if (errors.length > 0) {
@@ -41,7 +41,7 @@ export async function importKS4Destinations(
         count: 0,
         error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
-    }
+    }   
 
     const validRows = rows.filter((row) => row.URN && row.RECTYPE === '1');
     const totalBatches = Math.ceil(validRows.length / BATCH_SIZE);
@@ -53,7 +53,7 @@ export async function importKS4Destinations(
       const currentBatchNumber = Math.floor(i / BATCH_SIZE) + 1;
 
       for (const row of batchRows) {
-        const docId = `${row.URN}_${academicYear}`;
+        const docId = `${row.URN}_${year}`;
 
         // Main collection - with null checks
         currentBatch.set(doc(db, 'school-ks4-destinations', docId), {

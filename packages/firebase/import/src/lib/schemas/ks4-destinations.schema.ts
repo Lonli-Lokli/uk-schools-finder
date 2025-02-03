@@ -2,15 +2,6 @@ import { z } from 'zod';
 import { stringOrNumber } from './helpers';
 import { mustBeNumber, mustBePercentage } from './helpers';
 
-// Helper function for number parsing
-const optionalString = () =>
-  z.coerce
-    .string()
-    .optional()
-    .nullable()
-    .default('')
-    .transform((value) => value ?? '');
-
 export const KS4DestinationsSchema = z.object({
   // School identifiers
   RECTYPE: stringOrNumber(), // Record type (1 = School, 2 = Special School)

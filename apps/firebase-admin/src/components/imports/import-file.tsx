@@ -5,7 +5,6 @@ import {
   Card,
   Alert,
   DatePicker,
-  DatePickerProps,
   Progress,
 } from 'antd';
 import { useUnit } from 'effector-react';

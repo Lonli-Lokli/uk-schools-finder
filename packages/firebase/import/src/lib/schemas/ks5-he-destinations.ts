@@ -1,54 +1,38 @@
 import { z } from 'zod';
-
-const ifEmpty = (val: string | number | undefined | null) =>
-  val === '' || val === undefined || val === null ? null : Number(val);
-const numberOrNull = z
-  .string()
-  .or(z.number())
-  .or(z.undefined())
-  .or(z.null())
-  .transform(ifEmpty)
-  .nullable();
+import { mustBeNumber, mustBePercentage, stringOrNumber } from './helpers';
 
 export const KS5HEDestinationsSchema = z.object({
-  URN: z
-    .string()
-    .or(z.number())
-    .or(z.null())
-    .transform((val) => val?.toString() ?? ''),
-  RECTYPE: z
-    .string()
-    .or(z.number())
-    .transform((val) => val.toString()),
+  URN: stringOrNumber(),
+  RECTYPE: stringOrNumber(),
 
   // University groups
-  ALL_OXBRIDGE: numberOrNull,
-  ALL_RUSSELL: numberOrNull,
-  ALL_TOP3RD: numberOrNull,
-  ALL_HTECH: numberOrNull,
+  ALL_OXBRIDGE: mustBeNumber(),
+  ALL_RUSSELL: mustBeNumber(),
+  ALL_TOP3RD: mustBePercentage(),
+  ALL_HTECH: mustBePercentage(),
 
   // Percentages
-  ALL_OXBRIDGEPER: numberOrNull,
-  ALL_RUSSELLPER: numberOrNull,
-  ALL_TOP3RDPER: numberOrNull,
-  ALL_HTECHPER: numberOrNull,
+  ALL_OXBRIDGEPER: mustBePercentage(),
+  ALL_RUSSELLPER: mustBePercentage(),
+  ALL_TOP3RDPER: mustBePercentage(),
+  ALL_HTECHPER: mustBePercentage(),
 
   // Disadvantaged versions
-  DIS_OXBRIDGE: numberOrNull,
-  DIS_RUSSELL: numberOrNull,
-  DIS_TOP3RD: numberOrNull,
-  DIS_HTECH: numberOrNull,
+  DIS_OXBRIDGE: mustBeNumber(),
+  DIS_RUSSELL: mustBeNumber(),
+  DIS_TOP3RD: mustBeNumber(),
+  DIS_HTECH: mustBeNumber(),
 
-  DIS_OXBRIDGEPER: numberOrNull,
-  DIS_RUSSELLPER: numberOrNull,
-  DIS_TOP3RDPER: numberOrNull,
-  DIS_HTECHPER: numberOrNull,
+  DIS_OXBRIDGEPER: mustBePercentage(),
+  DIS_RUSSELLPER: mustBePercentage(),
+  DIS_TOP3RDPER: mustBePercentage(),
+  DIS_HTECHPER: mustBePercentage(),
 
   // Performance measures
-  ALL_SCORE: numberOrNull,
-  ALL_BAND: numberOrNull,
-  ALL_UPPER: numberOrNull,
-  ALL_LOWER: numberOrNull,
+  ALL_SCORE: mustBeNumber(),
+  ALL_BAND: mustBeNumber(),
+  ALL_UPPER: mustBeNumber(),
+  ALL_LOWER: mustBeNumber(),
 });
 
 export type KS5HEDestinationsRow = z.infer<typeof KS5HEDestinationsSchema>;

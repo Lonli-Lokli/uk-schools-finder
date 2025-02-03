@@ -26,7 +26,8 @@ export async function importKS5Destinations(
     const { valid: rows, errors } =
       await parseAndValidateCSV<KS5DestinationsRow>(
         csvData,
-        KS5DestinationsSchema as any
+        KS5DestinationsSchema as any,
+        (row) => ['1', '3'].includes(row.RECTYPE?.toString() ?? '')
       );
 
     if (errors.length > 0) {
@@ -37,7 +38,12 @@ export async function importKS5Destinations(
       };
     }
 
-    const validRows = rows.filter(row => row.URN && row.RECTYPE === '1');
+    return {
+      success: true,
+      count: rows.length,
+    };
+
+    const validRows = rows.filter((row) => row.URN && row.RECTYPE === '1');
     const totalBatches = Math.ceil(validRows.length / BATCH_SIZE);
     let processedCount = 0;
 
@@ -98,12 +104,12 @@ export async function importKS5Destinations(
 
       await batch.commit();
       processedCount += batchRows.length;
-      
+
       // Report progress
       onProgress?.({
         current: currentBatch,
         total: totalBatches,
-        details: `Processed ${processedCount} of ${validRows.length} records`
+        details: `Processed ${processedCount} of ${validRows.length} records`,
       });
     }
 

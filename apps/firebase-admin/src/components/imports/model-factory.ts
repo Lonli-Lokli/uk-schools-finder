@@ -1,7 +1,7 @@
 import { ImportParams, ImportResult } from '@lonli-lokli/firebase/import';
-import { createStore, createEffect, createEvent, sample, scopeBind } from 'effector';
+import { initializeClientFirebase } from '@lonli-lokli/firebase/setup-client';
+import { createStore, createEffect, createEvent, sample } from 'effector';
 import { createAction } from 'effector-action';
-import { initializeClientFirebase } from '../../server/init';
 
 interface Message {
   text: string;

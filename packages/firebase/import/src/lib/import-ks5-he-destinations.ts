@@ -1,13 +1,8 @@
 import { doc, writeBatch } from 'firebase/firestore';
 import { KS5HEDestinationsRow } from './schemas/ks5-he-destinations';
 import { KS5HEDestinationsSchema } from './schemas/ks5-he-destinations';
-import { ImportParams, parseAndValidateCSV } from './shapes';
+import { ImportParams, ImportResult, parseAndValidateCSV } from './shapes';
 
-interface ImportResult {
-  success: boolean;
-  count: number;
-  errors?: string[];
-}
 
 const BATCH_SIZE = 500;
 
@@ -22,7 +17,8 @@ export async function importKS5HEDestinations(
     const { valid: parsedRows, errors } =
       await parseAndValidateCSV<KS5HEDestinationsRow>(
         csvData,
-        KS5HEDestinationsSchema as any
+        KS5HEDestinationsSchema as any,
+        (row) => ['1', '3'].includes(row.RECTYPE?.toString() ?? '')
       );
 
     if (errors.length > 0) {
@@ -32,6 +28,11 @@ export async function importKS5HEDestinations(
         error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
     }
+
+    return {
+      success: true,
+      count: parsedRows.length,
+    };
 
     let processedCount = 0;
     // Skip non-school records
@@ -96,14 +97,13 @@ export async function importKS5HEDestinations(
     return {
       success: true,
       count: processedCount,
-      errors: [],
     };
   } catch (error) {
     console.error('KS5 HE destinations import error:', error);
     return {
       success: false,
       count: 0,
-      errors: [(error as Error).message],
+      error: (error as Error).message,
     };
   }
 }
