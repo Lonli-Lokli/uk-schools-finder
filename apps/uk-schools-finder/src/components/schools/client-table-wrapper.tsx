@@ -30,7 +30,7 @@ export function ClientTableWrapper({
     }
 
     if (sorter && !Array.isArray(sorter)) {
-      params.set('sort', sorter.field.toString());
+      params.set('sort', sorter.field?.toString() ?? '');
       params.set('order', sorter.order || 'ascend');
     }
 

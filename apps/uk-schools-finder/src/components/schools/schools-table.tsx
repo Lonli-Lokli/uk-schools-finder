@@ -1,7 +1,8 @@
 import { Table } from 'antd';
 import Link from 'next/link';
 import { ClientTableWrapper } from './client-table-wrapper';
-import type { School } from '@/types';
+import { School } from '../../shapes';
+import { getRatingColor } from './utils';
 
 type SchoolsTableProps = {
   schools: School[];
@@ -10,6 +11,7 @@ type SchoolsTableProps = {
   currentPage: number;
   sortField?: string;
   sortOrder?: string;
+
 };
 
 // Server Component

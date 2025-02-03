@@ -1,5 +1,5 @@
 import { SchoolsTable, SchoolsMap } from '../components';
-import { getSchools } from '@/lib/schools';
+import { getSchools } from '../data-access/schools';
 
 type SearchParams = {
   page?: string;

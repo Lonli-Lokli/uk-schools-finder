@@ -6,6 +6,7 @@
   "scripts": {
     "nx": "nx",
     "graph": "nx graph",
+    "clear": "nx reset",
     "start:app": "nx run uk-schools-finder:start",
     "start:admin": "nx run firebase-admin:serve",
     "build": "nx build uk-schools-finder"
@@ -26,11 +27,13 @@
     "firebase-admin": "13.0.1",
     "geofire": "^6.0.0",
     "geofire-common": "^6.0.0",
+    "leaflet": "^1.9.4",
     "next": "14.2.16",
     "patronum": "^2.3.0",
     "proj4": "^2.15.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
+    "react-leaflet": "^5.0.0",
     "vite-plugin-node-polyfills": "^0.23.0",
     "zod": "^3.24.1"
   },
@@ -50,6 +53,7 @@
     "@swc-node/register": "~1.9.1",
     "@swc/core": "~1.5.7",
     "@swc/helpers": "~0.5.11",
+    "@types/leaflet": "^1.9.16",
     "@types/node": "~18.16.9",
     "@types/papaparse": "^5.3.15",
     "@types/react": "18.3.1",

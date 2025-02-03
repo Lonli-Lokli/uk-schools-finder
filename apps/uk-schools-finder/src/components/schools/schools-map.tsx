@@ -1,5 +1,5 @@
 import dynamic from 'next/dynamic';
-import type { School } from '@/types';
+import { School } from '../../shapes';
 
 // Dynamically import the client-side map component with no SSR
 const ClientMap = dynamic(

@@ -3,8 +3,9 @@
 import { useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import L from 'leaflet';
-import type { School } from '@/types';
 import 'leaflet/dist/leaflet.css';
+import { School } from '../../shapes';
+import { getRatingColor } from './utils';
 
 // Fix Leaflet default marker icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
@@ -50,4 +51,4 @@ export function ClientMap({ schools, center, zoom }: ClientMapProps) {
       ))}
     </MapContainer>
   );
-} 
+}
