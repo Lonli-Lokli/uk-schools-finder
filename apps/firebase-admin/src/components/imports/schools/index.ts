@@ -1,1 +1,0 @@
-export { SchoolsImport } from './ui';

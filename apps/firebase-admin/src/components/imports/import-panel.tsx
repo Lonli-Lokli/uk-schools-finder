@@ -1,34 +1,81 @@
 import { Tabs } from 'antd';
-import { RegionsImport } from './regions';
-import { KS5DestinationsImport } from './ks5-destinations';
-import { SchoolsImport } from './schools';
-import { KS5HEDestinationsImport } from './ks5he-destinations/ui';
-import { KS4ResultsImport } from './ks4-results';
-import { KS4DestinationsImport } from './ks4-destinations';
+import { ImportFile } from './import-file';
+import { createImportModel } from './model-factory';
+import {
+  importKS4Destinations,
+  importKS4Results,
+  importKS5Destinations,
+  importKS5HEDestinations,
+  importRegions,
+  importSchools,
+} from '@lonli-lokli/firebase/import';
 
-const { TabPane } = Tabs;
+export const importTabs = [
+  {
+    key: 'ks4-results',
+    label: 'KS4 Results',
+    model: createImportModel('ks4-results', importKS4Results),
+    fileName: 'england_ks4provisional.csv',
+    description: 'Import KS4 (GCSE) student results data.',
+  },
+  {
+    key: 'ks4-destinations',
+    label: 'KS4 Destinations',
+    model: createImportModel('ks4-destinations', importKS4Destinations),
+    fileName: 'england_ks4-pupdest.csv',
+    description: 'Import KS4 (GCSE) student destinations data.',
+  },
+
+  {
+    key: 'ks5-destinations',
+    label: 'KS5 Destinations',
+    model: createImportModel('ks5-destinations', importKS5Destinations),
+    fileName: 'england_ks5-studest.csv',
+    description: 'Import KS5 (A-Level) student destinations data.',
+  },
+
+  {
+    key: 'ks5he-destinations',
+    label: 'KS5 HE Destinations',
+    model: createImportModel('ks5he-destinations', importKS5HEDestinations),
+    fileName: 'england_ks5-studest-he.csv',
+    description: 'Import KS5 (A-Level) student destinations data.',
+  },
+
+  {
+    key: 'regions',
+    label: 'Regions',
+    model: createImportModel('regions', importRegions),
+    fileName: 'england_regions.csv',
+    description: 'Import regions data.',
+  },
+  {
+    key: 'schools',
+    label: 'Schools',
+    model: createImportModel('schools', importSchools),
+    fileName: 'england_schools.csv',
+    description:
+      'Import basic school information including URN, name, and location.',
+  },
+];
 
 export function ImportPanel() {
   return (
-    <Tabs defaultActiveKey="schools">
-      <TabPane tab="Schools" key="schools">
-        <SchoolsImport />
-      </TabPane>
-      <TabPane tab="Regions" key="regions">
-        <RegionsImport />
-      </TabPane>
-      <TabPane tab="KS5 Destinations" key="ks5">
-        <KS5DestinationsImport />
-      </TabPane>
-      <TabPane tab="KS5 HE Destinations" key="ks5he">
-        <KS5HEDestinationsImport />
-      </TabPane>
-      <TabPane tab="KS4 Results" key="ks4">
-        <KS4ResultsImport />
-      </TabPane>
-      <TabPane tab="KS4 Destinations" key="ks4dest">
-        <KS4DestinationsImport />
-      </TabPane>
-    </Tabs>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">Data Import</h1>
+      <Tabs defaultActiveKey="ks4-results">
+        {importTabs.map((tab) => (
+          <Tabs.TabPane key={tab.key} tab={tab.label}>
+            <ImportFile
+              title={`Import ${tab.label} Data`}
+              model={tab.model}
+              yearRequired={tab.key !== 'schools'}
+              acceptedFileName={tab.fileName}
+              description={tab.description}
+            />
+          </Tabs.TabPane>
+        ))}
+      </Tabs>
+    </div>
   );
-} 
+}

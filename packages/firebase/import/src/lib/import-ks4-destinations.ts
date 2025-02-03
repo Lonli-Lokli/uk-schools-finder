@@ -1,230 +1,247 @@
-import { doc, Firestore, writeBatch } from 'firebase/firestore';
-import { ImportParams, ImportResult, BATCH_SIZE, parseAndValidateCSV } from './shapes';
+import { doc, writeBatch } from 'firebase/firestore';
+import {
+  ImportParams,
+  ImportResult,
+  BATCH_SIZE,
+  parseAndValidateCSV,
+} from './shapes';
 import { KS4DestinationsSchema } from './schemas/ks4-destinations.schema';
 import type { KS4DestinationsRow } from './schemas/ks4-destinations.schema';
-
-export const KS4_DESTINATIONS_HELPER = {
-  title: 'KS4 Destinations',
-  description: 'Import KS4 (GCSE) student destinations data',
-  fileName: 'england_ks4-pupdest.csv'
-};
 
 function detectHistoricalYears(row: KS4DestinationsRow): string[] {
   // Look for fields matching the pattern COHORT_XX where XX is the year
   return Object.keys(row)
-    .filter(key => key.startsWith('COHORT_') && key.length === 8) // COHORT_XX
-    .map(key => key.slice(-2)); // Extract the year part
+    .filter((key) => key.startsWith('COHORT_') && key.length === 8) // COHORT_XX
+    .map((key) => key.slice(-2)); // Extract the year part
+}
+
+// Helper function to ensure no undefined values
+function cleanValue<T>(value: T): T | null {
+  return value === undefined ? null : value;
 }
 
 export async function importKS4Destinations(
-  params: ImportParams & { db: Firestore }
+  params: ImportParams
 ): Promise<ImportResult> {
-  const { csvData, year, db } = params;
-  const academicYear = `${Number(year)-1}/${year.slice(-2)}`;
+  const { csvData, year, db, onProgress } = params;
+  const academicYear = `${Number(year) - 1}/${year.slice(-2)}`;
 
   try {
-    const { valid: rows, errors } = await parseAndValidateCSV<KS4DestinationsRow>(
-      csvData,
-      KS4DestinationsSchema as any
-    );
+    onProgress({ details: `Parsing file...` });
+
+    const { valid: rows, errors } =
+      await parseAndValidateCSV<KS4DestinationsRow>(
+        csvData,
+        KS4DestinationsSchema as any
+      );
 
     if (errors.length > 0) {
-      return { 
-        success: false, 
-        count: 0, 
-        errors: errors.map((e) => `Row ${e.row}: ${e.error.message}`) 
+      return {
+        success: false,
+        count: 0,
+        error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
     }
 
-    const validRows = rows.filter(row => row.URN && row.RECTYPE === '1');
-    let imported = 0;
-    let currentBatch = writeBatch(db);
-    let batchCount = 0;
+    const validRows = rows.filter((row) => row.URN && row.RECTYPE === '1');
+    const totalBatches = Math.ceil(validRows.length / BATCH_SIZE);
+    let processedCount = 0;
 
-    for (const row of validRows) {
-      const docId = `${row.URN}_${academicYear}`;
-      
-      // Main collection - most important metrics
-      currentBatch.set(
-        doc(db, 'school-ks4-destinations', docId),
-        {
+    for (let i = 0; i < validRows.length; i += BATCH_SIZE) {
+      const currentBatch = writeBatch(db);
+      const batchRows = validRows.slice(i, i + BATCH_SIZE);
+      const currentBatchNumber = Math.floor(i / BATCH_SIZE) + 1;
+
+      for (const row of batchRows) {
+        const docId = `${row.URN}_${academicYear}`;
+
+        // Main collection - with null checks
+        currentBatch.set(doc(db, 'school-ks4-destinations', docId), {
           urn: row.URN,
-          year: academicYear,
-          // Overall sustained destinations
-          sustained: row.OVERALL_DESTPER,  // Key headline figure
-          // Main destination types
-          education: row.EDUCATIONPER,
-          employment: row.EMPLOYMENTPER,
-          apprenticeships: row.APPRENPER,
-          // Education breakdown
-          furtherEducation: row.FEPER,
-          sixthForm: row.SCH_6THPER,
-          sixthFormCollege: row.SIXTH_COLPER,
-          // Disadvantaged comparison
-          disadvantagedSustained: row.OVERALL_DESTPER_DIS,
-          nonDisadvantagedSustained: row.OVERALL_DESTPER_NONDIS,
-          cohortSize: row.COHORT,  // Context for the percentages
+          year: year,
+          sustained: cleanValue(row.OVERALL_DESTPER),
+          education: cleanValue(row.EDUCATIONPER),
+          employment: cleanValue(row.EMPLOYMENTPER),
+          apprenticeships: cleanValue(row.APPRENPER),
+          furtherEducation: cleanValue(row.FEPER),
+          sixthForm: cleanValue(row.SCH_6THPER),
+          sixthFormCollege: cleanValue(row.SIXTH_COLPER),
+          disadvantagedSustained: cleanValue(row.OVERALL_DESTPER_DIS),
+          nonDisadvantagedSustained: cleanValue(row.OVERALL_DESTPER_NONDIS),
+          cohortSize: cleanValue(row.COHORT),
           lastUpdated: new Date().toISOString(),
-        }
-      );
+        });
 
-      // Details collection - detailed breakdowns
-      currentBatch.set(
-        doc(db, 'school-ks4-destinations-details', docId),
-        {
+        // Details collection - with null checks
+        currentBatch.set(doc(db, 'school-ks4-destinations-details', docId), {
           urn: row.URN,
-          year: academicYear,
-          // Raw numbers
+          year: year,
           numbers: {
-            cohort: row.COHORT,
-            sustained: row.OVERALL_DEST,
-            education: row.EDUCATION,
-            employment: row.EMPLOYMENT,
-            apprenticeships: row.APPREN,
-            furtherEducation: row.FE,
-            schoolSixthForm: row.SCH_6TH,
-            sixthFormCollege: row.SIXTH_COL,
-            otherEducation: row.OTHER_EDU,
-            notSustained: row.NOT_SUSTAINED,
-            unknown: row.UNKNOWN,
+            cohort: cleanValue(row.COHORT),
+            sustained: cleanValue(row.OVERALL_DEST),
+            education: cleanValue(row.EDUCATION),
+            employment: cleanValue(row.EMPLOYMENT),
+            apprenticeships: cleanValue(row.APPREN),
+            furtherEducation: cleanValue(row.FE),
+            schoolSixthForm: cleanValue(row.SCH_6TH),
+            sixthFormCollege: cleanValue(row.SIXTH_COL),
+            otherEducation: cleanValue(row.OTHER_EDU),
+            notSustained: cleanValue(row.NOT_SUSTAINED),
+            unknown: cleanValue(row.UNKNOWN),
           },
-          // Detailed breakdowns by group
           disadvantaged: {
-            cohort: row.COHORT_DIS,
+            cohort: cleanValue(row.COHORT_DIS),
             sustained: {
-              number: row.OVERALL_DEST_DIS,
-              percentage: row.OVERALL_DESTPER_DIS,
+              number: cleanValue(row.OVERALL_DEST_DIS),
+              percentage: cleanValue(row.OVERALL_DESTPER_DIS),
             },
             education: {
-              number: row.EDUCATION_DIS,
-              percentage: row.EDUCATIONPER_DIS,
+              number: cleanValue(row.EDUCATION_DIS),
+              percentage: cleanValue(row.EDUCATIONPER_DIS),
             },
             employment: {
-              number: row.EMPLOYMENT_DIS,
-              percentage: row.EMPLOYMENTPER_DIS,
+              number: cleanValue(row.EMPLOYMENT_DIS),
+              percentage: cleanValue(row.EMPLOYMENTPER_DIS),
             },
             apprenticeships: {
-              number: row.APPREN_DIS,
-              percentage: row.APPRENPER_DIS,
+              number: cleanValue(row.APPREN_DIS),
+              percentage: cleanValue(row.APPRENPER_DIS),
             },
             furtherEducation: {
-              number: row.FE_DIS,
-              percentage: row.FEPER_DIS,
+              number: cleanValue(row.FE_DIS),
+              percentage: cleanValue(row.FEPER_DIS),
             },
             schoolSixthForm: {
-              number: row.SCH_6TH_DIS,
-              percentage: row.SCH_6THPER_DIS,
+              number: cleanValue(row.SCH_6TH_DIS),
+              percentage: cleanValue(row.SCH_6THPER_DIS),
             },
             sixthFormCollege: {
-              number: row.SIXTH_COL_DIS,
-              percentage: row.SIXTH_COLPER_DIS,
+              number: cleanValue(row.SIXTH_COL_DIS),
+              percentage: cleanValue(row.SIXTH_COLPER_DIS),
             },
             otherEducation: {
-              number: row.OTHER_EDU_DIS,
-              percentage: row.OTHER_EDUPER_DIS,
+              number: cleanValue(row.OTHER_EDU_DIS),
+              percentage: cleanValue(row.OTHER_EDUPER_DIS),
             },
             notSustained: {
-              number: row.NOT_SUSTAINED_DIS,
-              percentage: row.NOT_SUSTAINEDPER_DIS,
+              number: cleanValue(row.NOT_SUSTAINED_DIS),
+              percentage: cleanValue(row.NOT_SUSTAINEDPER_DIS),
             },
             unknown: {
-              number: row.UNKNOWN_DIS,
-              percentage: row.UNKNOWNPER_DIS,
+              number: cleanValue(row.UNKNOWN_DIS),
+              percentage: cleanValue(row.UNKNOWNPER_DIS),
             },
           },
           nonDisadvantaged: {
-            cohort: row.COHORT_NONDIS,
+            cohort: cleanValue(row.COHORT_NONDIS),
             sustained: {
-              number: row.OVERALL_DEST_NONDIS,
-              percentage: row.OVERALL_DESTPER_NONDIS,
+              number: cleanValue(row.OVERALL_DEST_NONDIS),
+              percentage: cleanValue(row.OVERALL_DESTPER_NONDIS),
             },
             education: {
-              number: row.EDUCATION_NONDIS,
-              percentage: row.EDUCATIONPER_NONDIS,
+              number: cleanValue(row.EDUCATION_NONDIS),
+              percentage: cleanValue(row.EDUCATIONPER_NONDIS),
             },
             employment: {
-              number: row.EMPLOYMENT_NONDIS,
-              percentage: row.EMPLOYMENTPER_NONDIS,
+              number: cleanValue(row.EMPLOYMENT_NONDIS),
+              percentage: cleanValue(row.EMPLOYMENTPER_NONDIS),
             },
             apprenticeships: {
-              number: row.APPREN_NONDIS,
-              percentage: row.APPRENPER_NONDIS,
+              number: cleanValue(row.APPREN_NONDIS),
+              percentage: cleanValue(row.APPRENPER_NONDIS),
             },
             furtherEducation: {
-              number: row.FE_NONDIS,
-              percentage: row.FEPER_NONDIS,
+              number: cleanValue(row.FE_NONDIS),
+              percentage: cleanValue(row.FEPER_NONDIS),
             },
             schoolSixthForm: {
-              number: row.SCH_6TH_NONDIS,
-              percentage: row.SCH_6THPER_NONDIS,
+              number: cleanValue(row.SCH_6TH_NONDIS),
+              percentage: cleanValue(row.SCH_6THPER_NONDIS),
             },
             sixthFormCollege: {
-              number: row.SIXTH_COL_NONDIS,
-              percentage: row.SIXTH_COLPER_NONDIS,
+              number: cleanValue(row.SIXTH_COL_NONDIS),
+              percentage: cleanValue(row.SIXTH_COLPER_NONDIS),
             },
             otherEducation: {
-              number: row.OTHER_EDU_NONDIS,
-              percentage: row.OTHER_EDUPER_NONDIS,
+              number: cleanValue(row.OTHER_EDU_NONDIS),
+              percentage: cleanValue(row.OTHER_EDUPER_NONDIS),
             },
             notSustained: {
-              number: row.NOT_SUSTAINED_NONDIS,
-              percentage: row.NOT_SUSTAINEDPER_NONDIS,
+              number: cleanValue(row.NOT_SUSTAINED_NONDIS),
+              percentage: cleanValue(row.NOT_SUSTAINEDPER_NONDIS),
             },
             unknown: {
-              number: row.UNKNOWN_NONDIS,
-              percentage: row.UNKNOWNPER_NONDIS,
+              number: cleanValue(row.UNKNOWN_NONDIS),
+              percentage: cleanValue(row.UNKNOWNPER_NONDIS),
             },
           },
           lastUpdated: new Date().toISOString(),
+        });
+
+        // Historical data - with null checks
+        const historicalYears = detectHistoricalYears(row);
+
+        for (const yearSuffix of historicalYears) {
+          const historicalYear = Number(yearSuffix);
+          const historicalAcademicYear = `${historicalYear - 1}/${yearSuffix}`;
+
+          currentBatch.set(
+            doc(
+              db,
+              'school-ks4-destinations-history',
+              `${row.URN}_${historicalAcademicYear}`
+            ),
+            {
+              urn: row.URN,
+              year: historicalAcademicYear,
+              cohort: cleanValue(
+                row[`COHORT_${yearSuffix}` as keyof KS4DestinationsRow]
+              ),
+              sustained: cleanValue(
+                row[`OVERALL_DESTPER_${yearSuffix}` as keyof KS4DestinationsRow]
+              ),
+              disadvantaged: {
+                cohort: cleanValue(
+                  row[`COHORT_DIS_${yearSuffix}` as keyof KS4DestinationsRow]
+                ),
+                sustained: cleanValue(
+                  row[
+                    `OVERALL_DESTPER_DIS_${yearSuffix}` as keyof KS4DestinationsRow
+                  ]
+                ),
+              },
+              nonDisadvantaged: {
+                cohort: cleanValue(
+                  row[`COHORT_NONDIS_${yearSuffix}` as keyof KS4DestinationsRow]
+                ),
+                sustained: cleanValue(
+                  row[
+                    `OVERALL_DESTPER_NONDIS_${yearSuffix}` as keyof KS4DestinationsRow
+                  ]
+                ),
+              },
+              lastUpdated: new Date().toISOString(),
+            }
+          );
         }
-      );
 
-      // Detect and process historical years from the data
-      const historicalYears = detectHistoricalYears(row);
-      
-      for (const yearSuffix of historicalYears) {
-        const historicalYear = Number(yearSuffix);
-        const historicalAcademicYear = `${historicalYear-1}/${yearSuffix}`;
-        
-        currentBatch.set(
-          doc(db, 'school-ks4-destinations-history', `${row.URN}_${historicalAcademicYear}`),
-          {
-            urn: row.URN,
-            year: historicalAcademicYear,
-            cohort: row[`COHORT_${yearSuffix}` as keyof KS4DestinationsRow],
-            sustained: row[`OVERALL_DESTPER_${yearSuffix}` as keyof KS4DestinationsRow],
-            disadvantaged: {
-              cohort: row[`COHORT_DIS_${yearSuffix}` as keyof KS4DestinationsRow],
-              sustained: row[`OVERALL_DESTPER_DIS_${yearSuffix}` as keyof KS4DestinationsRow],
-            },
-            nonDisadvantaged: {
-              cohort: row[`COHORT_NONDIS_${yearSuffix}` as keyof KS4DestinationsRow],
-              sustained: row[`OVERALL_DESTPER_NONDIS_${yearSuffix}` as keyof KS4DestinationsRow],
-            },
-            lastUpdated: new Date().toISOString(),
-          }
-        );
+        processedCount++;
       }
 
-      batchCount++;
-      imported++;
-
-      if (batchCount === BATCH_SIZE) {
-        await currentBatch.commit();
-        currentBatch = writeBatch(db);
-        batchCount = 0;
-      }
-    }
-
-    // Commit any remaining documents
-    if (batchCount > 0) {
       await currentBatch.commit();
+
+      // Report progress
+      onProgress?.({
+        current: currentBatchNumber,
+        total: totalBatches,
+        details: `Processed ${processedCount} of ${validRows.length} records`,
+      });
     }
 
-    console.log(`Successfully imported ${imported} KS4 destinations`);
+    console.log(`Successfully imported ${processedCount} KS4 destinations`);
     return {
       success: true,
-      count: imported,
+      count: processedCount,
       errors: [],
     };
   } catch (error) {

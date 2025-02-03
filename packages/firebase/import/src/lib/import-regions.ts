@@ -1,6 +1,13 @@
 import { doc, writeBatch } from 'firebase/firestore';
-import { ImportResult, BATCH_SIZE, parseAndValidateCSV, ImportParams } from './shapes';
+import {
+  ImportResult,
+  BATCH_SIZE,
+  parseAndValidateCSV,
+  ImportParams,
+} from './shapes';
 import { RegionRowSchema, RegionRow } from './schemas/regions';
+import { Firestore } from 'firebase/firestore';
+
 interface RegionDoc {
   name: string;
   subRegions: {
@@ -13,9 +20,10 @@ interface RegionDoc {
 export async function importRegions(
   params: ImportParams
 ): Promise<ImportResult> {
-  const { db, csvData } = params;
+  const { db, csvData, onProgress } = params;
 
   try {
+    onProgress({ details: `Parsing file...` });
     const { valid: rows, errors } = await parseAndValidateCSV<RegionRow>(
       csvData,
       RegionRowSchema as any
@@ -25,7 +33,7 @@ export async function importRegions(
       return {
         success: false,
         count: 0,
-        errors: errors.map((e) => `Row ${e.row}: ${e.error.message}`),
+        error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
     }
 
@@ -49,11 +57,12 @@ export async function importRegions(
     // Convert to array for batch processing
     const regionEntries = Array.from(regions.entries());
     const totalBatches = Math.ceil(regionEntries.length / BATCH_SIZE);
-
     let processedCount = 0;
+
     for (let i = 0; i < regionEntries.length; i += BATCH_SIZE) {
       const batch = writeBatch(db);
       const batchEntries = regionEntries.slice(i, i + BATCH_SIZE);
+      const currentBatchNumber = Math.floor(i / BATCH_SIZE) + 1;
 
       for (const [regionId, regionData] of batchEntries) {
         const regionRef = doc(db, 'regions', regionId);
@@ -62,9 +71,13 @@ export async function importRegions(
 
       await batch.commit();
       processedCount += batchEntries.length;
-      console.log(
-        `Processed batch ${Math.floor(i / BATCH_SIZE) + 1}/${totalBatches}`
-      );
+
+      // Report progress
+      onProgress?.({
+        current: currentBatchNumber,
+        total: totalBatches,
+        details: `Processed ${processedCount} of ${regionEntries.length} regions`,
+      });
     }
 
     return {

@@ -1,43 +1,54 @@
-import { doc, Firestore, writeBatch } from 'firebase/firestore';
-import { ImportParams, ImportResult, BATCH_SIZE, parseAndValidateCSV } from './shapes';
-import { KS4ResultsSchema } from './schemas/ks4-results.schema';
+import { doc, writeBatch } from 'firebase/firestore';
+import {
+  ImportParams,
+  ImportResult,
+  BATCH_SIZE,
+  parseAndValidateCSV,
+} from './shapes';
+import {
+  KS4ResultsSchema,
+  shouldProcessRow,
+} from './schemas/ks4-results.schema';
 import type { KS4ResultsRow } from './schemas/ks4-results.schema';
 
-
 export async function importKS4Results(
-  params: ImportParams & { db: Firestore }
+  params: ImportParams
 ): Promise<ImportResult> {
-  const { csvData, year, db } = params;
-  const academicYear = `${Number(year)-1}/${year.slice(-2)}`;
+  const { csvData, year, db, onProgress } = params;
 
   try {
+    onProgress({ details: `Parsing file...` });
+
     const { valid: rows, errors } = await parseAndValidateCSV<KS4ResultsRow>(
       csvData,
-      KS4ResultsSchema as any
+      KS4ResultsSchema as any,
+      shouldProcessRow
     );
 
     if (errors.length > 0) {
-      return { 
-        success: false, 
-        count: 0, 
-        errors: errors.map((e) => `Row ${e.row}: ${e.error.message}`) 
+      return {
+        success: false,
+        count: 0,
+        error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
     }
 
-    const validRows = rows.filter(row => row.URN && row.RECTYPE === '1');
-    let imported = 0;
-    let currentBatch = writeBatch(db);
-    let batchCount = 0;
+    const validRows = rows.filter((row) => row.URN && row.RECTYPE === '1');
+    const totalBatches = Math.ceil(validRows.length / BATCH_SIZE);
+    let processedCount = 0;
 
-    for (const row of validRows) {
-      const docId = `${row.URN}_${academicYear}`;
-      
-      // 1. Main performance metrics
-      currentBatch.set(
-        doc(db, 'school-ks4-results', docId),
-        {
+    for (let i = 0; i < validRows.length; i += BATCH_SIZE) {
+      const currentBatch = writeBatch(db);
+      const batchRows = validRows.slice(i, i + BATCH_SIZE);
+      const currentBatchNumber = Math.floor(i / BATCH_SIZE) + 1;
+
+      for (const row of batchRows) {
+        const docId = `${row.URN}_${year}`;
+
+        // 1. Main performance metrics
+        currentBatch.set(doc(db, 'school-ks4-results', docId), {
           urn: row.URN,
-          year: academicYear,
+          year: year,
           schoolName: row.SCHNAME,
           // Core metrics
           attainment8Score: row.ATT8SCR,
@@ -69,15 +80,12 @@ export async function importKS4Results(
           ebaccAchievementRate95: row.PTEBACC_95,
           // Metadata
           lastUpdated: new Date().toISOString(),
-        }
-      );
+        });
 
-      // 2. Year-specific demographics
-      currentBatch.set(
-        doc(db, 'school-ks4-demographics', docId),
-        {
+        // 2. Year-specific demographics
+        currentBatch.set(doc(db, 'school-ks4-demographics', docId), {
           urn: row.URN,
-          year: academicYear,
+          year: year,
           pupils: {
             total: row.TOTPUPS,
             examCohort: row.TPUP,
@@ -90,15 +98,12 @@ export async function importKS4Results(
             disadvantaged: row.PTFSM6CLA1A,
           },
           lastUpdated: new Date().toISOString(),
-        }
-      );
+        });
 
-      // 3. Detailed performance data
-      currentBatch.set(
-        doc(db, 'school-ks4-details', docId),
-        {
+        // 3. Detailed performance data
+        currentBatch.set(doc(db, 'school-ks4-details', docId), {
           urn: row.URN,
-          year: academicYear,
+          year: year,
 
           // Attainment 8 breakdowns
           attainment8: {
@@ -107,7 +112,7 @@ export async function importKS4Results(
             maths: row.ATT8SCRMAT,
             ebacc: row.ATT8SCREBAC,
             open: row.ATT8SCROPEN,
-            
+
             // By prior attainment
             lowPrior: {
               overall: row.ATT8SCR_LO,
@@ -248,36 +253,31 @@ export async function importKS4Results(
           },
 
           lastUpdated: new Date().toISOString(),
-        }
-      );
-
-      batchCount++;
-      imported++;
-
-      if (batchCount === BATCH_SIZE) {
-        await currentBatch.commit();
-        currentBatch = writeBatch(db);
-        batchCount = 0;
+        });
       }
-    }
 
-    // Commit any remaining documents
-    if (batchCount > 0) {
       await currentBatch.commit();
+      processedCount += (batchRows.length * 3);
+
+      // Report progress
+      onProgress?.({
+        current: currentBatchNumber,
+        total: totalBatches,
+        details: `Processed ${processedCount} of ${validRows.length} records`,
+      });
     }
 
-    console.log(`Successfully imported ${imported} KS4 results`);
+    console.log(`Successfully imported ${processedCount} KS4 results`);
     return {
       success: true,
-      count: imported,
-      errors: [],
+      count: processedCount,
     };
   } catch (error) {
     console.error('KS4 results import error:', error);
     return {
       success: false,
       count: 0,
-      errors: [(error as Error).message],
+      error: (error as Error).message,
     };
   }
-} 
+}

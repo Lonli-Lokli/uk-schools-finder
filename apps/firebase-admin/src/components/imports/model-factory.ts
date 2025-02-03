@@ -1,5 +1,5 @@
 import { ImportParams, ImportResult } from '@lonli-lokli/firebase/import';
-import { createStore, createEffect, createEvent, sample } from 'effector';
+import { createStore, createEffect, createEvent, sample, scopeBind } from 'effector';
 import { createAction } from 'effector-action';
 import { initializeClientFirebase } from '../../server/init';
 
@@ -10,6 +10,12 @@ interface Message {
 
 const { db } = initializeClientFirebase();
 
+export interface Progress {
+  current?: number;
+  total?: number;
+  details?: string;
+}
+
 export function createImportModel(
   name: string,
   processFunction: (importArgs: ImportParams) => Promise<ImportResult>
@@ -18,11 +24,13 @@ export function createImportModel(
   const fileSelected = createEvent<File | null>();
   const resetState = createEvent();
   const uploadStarted = createEvent<{ file: File; year: string }>();
+  const progressUpdated = createEvent<Progress>();
 
   // Stores
   const $file = createStore<File | null>(null);
   const $isProcessing = createStore(false);
   const $message = createStore<Message | null>(null);
+  const $progress = createStore<Progress | null>(null);
 
   // Effects
   const processFileFx = createEffect<
@@ -44,12 +52,11 @@ export function createImportModel(
     fn: (result) => ({
       text: result.success
         ? `[${name}] File processed successfully. ${result.count} rows processed.`
-        : `[${name}] File processed with errors (${(result.errors ?? []).join(
-            ', '
-          )}).`,
+        : `[${name}] File processed with error (${result.error})`,
       type: result.success ? ('success' as const) : ('error' as const),
     }),
     target: $message,
+
   });
 
   sample({
@@ -82,23 +89,45 @@ export function createImportModel(
   });
 
   processFileFx.use(async ({ file, year }) => {
-    const csvData = await file.text();
+    const scopedProgressUpdated = progressUpdated;
+    const csvData = await file.text();    
     return await processFunction({
       csvData: csvData,
       year: year,
       db: db,
+      onProgress: (progress) => scopedProgressUpdated(progress),
     });
+
   });
+
+  $progress
+    .on(progressUpdated, (_, progress) => progress)
+    .reset(processFileFx.done)
+    .reset(processFileFx.fail)
+    .reset(fileSelected);
+
+  $message
+    .on(processFileFx.done, (_, { result }) => ({
+      text: `Successfully processed ${result.count} records`,
+      type: 'success' as const,
+    }))
+    .on(processFileFx.fail, (_, { error }) => ({
+      text: error.message,
+      type: 'error' as const,
+    }))
+    .reset(fileSelected);
 
   return {
     // Events
     fileSelected,
     resetState,
     uploadStarted,
+    progressUpdated,
     // Stores
     $file,
     $isProcessing,
     $message,
+    $progress,
   };
 }
 

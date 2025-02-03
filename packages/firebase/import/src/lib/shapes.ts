@@ -5,37 +5,52 @@ import { z, ZodError } from 'zod';
 export interface ImportResult {
   success: boolean;
   count: number;
-  errors?: string[];
+  error?: string;
 }
 export interface ImportParams {
   db: Firestore;
   csvData: string;
   year: string;
+  onProgress: (progress: {
+    current?: number;
+    total?: number;
+    details: string;
+  }) => void;
 }
 
-export const BATCH_SIZE = 500; // Firestore batch limit is 500
+// Firestore batch limit is 500, but we might have large documents
+export const BATCH_SIZE = 100;
 
-export function parseAndValidateCSV<T>(
+export async function parseAndValidateCSV<T>(
   content: string,
-  schema: z.ZodSchema<T>
+  schema: z.ZodSchema<T>,
+  shouldProcessRow?: (
+    row: Partial<T>,
+    index: number,
+    allRows: Partial<T>[]
+  ) => boolean
 ) {
-  return new Promise<{
-    valid: T[];
-    errors: { row: number; error: ZodError }[];
-  }>((resolve) => {
-    const valid: T[] = [];
-    const errors: { row: number; error: ZodError }[] = [];
+  const valid: T[] = [];
+  const errors: { row: number; error: ZodError }[] = [];
 
-    const result = csv2json(content);
-    result.forEach((row, index) => {
-      try {
-        const validatedRow = schema.parse(row);
+  const result = csv2json<Partial<T>>(content);
+  for (let i = 0; i < result.length; i++) {
+    const row = result[i];
+    try {
+      if (!shouldProcessRow || shouldProcessRow(row, i, result)) {
+        const validatedRow = await schema.parseAsync(row);
         valid.push(validatedRow);
-      } catch (error) {
-        errors.push({ row: index + 1, error: error as ZodError });
       }
-    });
+    } catch (error) {
+      errors.push({ row: i + 1, error: error as ZodError });
+    }
+  }
 
-    resolve({ valid: valid, errors });
-  });
+  return { valid: valid, errors };
+
+  errors: {
+    row: number;
+    error: ZodError;
+  }
+  [];
 }

@@ -20,8 +20,11 @@ proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs');
 export async function importSchools(
   params: ImportParams
 ): Promise<ImportResult> {
-  const { db, csvData } = params;
+  const { db, csvData, onProgress } = params;
   try {
+    onProgress?.({
+      details: `Parsing file...`,
+    });
     const { valid: validRows, errors } = await parseAndValidateCSV<SchoolRow>(
       csvData,
       SchoolRowSchema as any
@@ -32,7 +35,7 @@ export async function importSchools(
       return {
         success: false,
         count: 0,
-        errors: errors.map(e => `Row ${e.row}: ${e.error.message}`),
+        error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
     }
 
@@ -45,11 +48,10 @@ export async function importSchools(
     const processedPhases = new Set<string>();
     const processedLocations = new Set<string>();
     const processedTrusts = new Set<string>();
+    let processedCount = 0;
 
     for (let i = 0; i < validRows.length; i += BATCH_SIZE) {
       const batchNumber = Math.floor(i / BATCH_SIZE) + 1;
-      console.log(`Processing batch ${batchNumber}/${totalBatches}...`);
-
       const batch = writeBatch(db);
       const batchRows = validRows.slice(i, i + BATCH_SIZE);
 
@@ -244,9 +246,16 @@ export async function importSchools(
       }
 
       await batch.commit();
-      console.log(
-        `Completed batch ${batchNumber}/${totalBatches} (${batchRows.length} records)`
-      );
+      processedCount += batchRows.length;
+      
+      // Report progress with additional details
+      onProgress?.({
+        current: batchNumber,
+        total: totalBatches,
+        details: `Processed ${processedCount} of ${validRows.length} schools. ` +
+                `Created ${processedTypes.size} types, ${processedPhases.size} phases, ` +
+                `${processedLocations.size} locations, ${processedTrusts.size} trusts`
+      });
     }
 
     console.log(

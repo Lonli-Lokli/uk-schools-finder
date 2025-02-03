@@ -10,11 +10,19 @@ import {
   parseAndValidateCSV,
 } from './shapes';
 
+// Helper function to ensure no undefined values
+function cleanValue<T>(value: T): T | null {
+  return value === undefined ? null : value;
+}
+
 export async function importKS5Destinations(
   params: ImportParams
 ): Promise<ImportResult> {
-  const { db, csvData, year } = params;
+  const { db, csvData, year, onProgress } = params;
   try {
+    onProgress?.({
+      details: `Parsing file...`,
+    });
     const { valid: rows, errors } =
       await parseAndValidateCSV<KS5DestinationsRow>(
         csvData,
@@ -25,16 +33,18 @@ export async function importKS5Destinations(
       return {
         success: false,
         count: 0,
-        errors: errors.map((e) => `Row ${e.row}: ${e.error.message}`),
+        error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
     }
 
+    const validRows = rows.filter(row => row.URN && row.RECTYPE === '1');
+    const totalBatches = Math.ceil(validRows.length / BATCH_SIZE);
     let processedCount = 0;
-    const totalBatches = Math.ceil(rows.length / BATCH_SIZE);
 
-    for (let i = 0; i < rows.length; i += BATCH_SIZE) {
+    for (let i = 0; i < validRows.length; i += BATCH_SIZE) {
       const batch = writeBatch(db);
-      const batchRows = rows.slice(i, i + BATCH_SIZE);
+      const batchRows = validRows.slice(i, i + BATCH_SIZE);
+      const currentBatch = Math.floor(i / BATCH_SIZE) + 1;
 
       for (const row of batchRows) {
         if (!row.URN || row.RECTYPE !== '1') continue; // Skip non-school records
@@ -88,9 +98,13 @@ export async function importKS5Destinations(
 
       await batch.commit();
       processedCount += batchRows.length;
-      console.log(
-        `Processed batch ${Math.floor(i / BATCH_SIZE) + 1}/${totalBatches}`
-      );
+      
+      // Report progress
+      onProgress?.({
+        current: currentBatch,
+        total: totalBatches,
+        details: `Processed ${processedCount} of ${validRows.length} records`
+      });
     }
 
     return {
@@ -124,40 +138,69 @@ const createDestinationStats = (
     | 'LALLOTH_DIS'
     | 'LALLOTH_NONDIS'
 ) => ({
-  cohortSize: row[`${prefix}_COHORT` as keyof KS5DestinationsRow],
+  cohortSize: cleanValue(row[`${prefix}_COHORT` as keyof KS5DestinationsRow]),
   destinations: {
-    overall: row[`${prefix}_OVERALL` as keyof KS5DestinationsRow],
+    overall: cleanValue(row[`${prefix}_OVERALL` as keyof KS5DestinationsRow]),
     education: {
-      total: row[`${prefix}_EDUCATION` as keyof KS5DestinationsRow],
-      furtherEducation: row[`${prefix}_FE` as keyof KS5DestinationsRow],
-      higherEducation: row[`${prefix}_HE` as keyof KS5DestinationsRow],
-      other: row[`${prefix}_OTHER_EDU` as keyof KS5DestinationsRow],
+      total: cleanValue(row[`${prefix}_EDUCATION` as keyof KS5DestinationsRow]),
+      furtherEducation: cleanValue(
+        row[`${prefix}_FE` as keyof KS5DestinationsRow]
+      ),
+      higherEducation: cleanValue(
+        row[`${prefix}_HE` as keyof KS5DestinationsRow]
+      ),
+      other: cleanValue(row[`${prefix}_OTHER_EDU` as keyof KS5DestinationsRow]),
     },
     employment: {
-      total: row[`${prefix}_EMPLOYMENT` as keyof KS5DestinationsRow],
-      apprenticeships: row[`${prefix}_APPREN` as keyof KS5DestinationsRow],
+      total: cleanValue(
+        row[`${prefix}_EMPLOYMENT` as keyof KS5DestinationsRow]
+      ),
+      apprenticeships: cleanValue(
+        row[`${prefix}_APPREN` as keyof KS5DestinationsRow]
+      ),
     },
     other: {
-      notSustained: row[`${prefix}_NOT_SUSTAINED` as keyof KS5DestinationsRow],
-      notCaptured: row[`${prefix}_NOT_CAPTURED` as keyof KS5DestinationsRow],
+      notSustained: cleanValue(
+        row[`${prefix}_NOT_SUSTAINED` as keyof KS5DestinationsRow]
+      ),
+      notCaptured: cleanValue(
+        row[`${prefix}_NOT_CAPTURED` as keyof KS5DestinationsRow]
+      ),
     },
   },
   percentages: {
-    overall: row[`${prefix}_OVERALLPER` as keyof KS5DestinationsRow],
+    overall: cleanValue(
+      row[`${prefix}_OVERALLPER` as keyof KS5DestinationsRow]
+    ),
     education: {
-      total: row[`${prefix}_EDUCATIONPER` as keyof KS5DestinationsRow],
-      furtherEducation: row[`${prefix}_FEPER` as keyof KS5DestinationsRow],
-      higherEducation: row[`${prefix}_HEPER` as keyof KS5DestinationsRow],
-      other: row[`${prefix}_OTHER_EDUPER` as keyof KS5DestinationsRow],
+      total: cleanValue(
+        row[`${prefix}_EDUCATIONPER` as keyof KS5DestinationsRow]
+      ),
+      furtherEducation: cleanValue(
+        row[`${prefix}_FEPER` as keyof KS5DestinationsRow]
+      ),
+      higherEducation: cleanValue(
+        row[`${prefix}_HEPER` as keyof KS5DestinationsRow]
+      ),
+      other: cleanValue(
+        row[`${prefix}_OTHER_EDUPER` as keyof KS5DestinationsRow]
+      ),
     },
     employment: {
-      total: row[`${prefix}_EMPLOYMENTPER` as keyof KS5DestinationsRow],
-      apprenticeships: row[`${prefix}_APPRENPER` as keyof KS5DestinationsRow],
+      total: cleanValue(
+        row[`${prefix}_EMPLOYMENTPER` as keyof KS5DestinationsRow]
+      ),
+      apprenticeships: cleanValue(
+        row[`${prefix}_APPRENPER` as keyof KS5DestinationsRow]
+      ),
     },
     other: {
-      notSustained:
-        row[`${prefix}_NOT_SUSTAINEDPER` as keyof KS5DestinationsRow],
-      notCaptured: row[`${prefix}_NOT_CAPTUREDPER` as keyof KS5DestinationsRow],
+      notSustained: cleanValue(
+        row[`${prefix}_NOT_SUSTAINEDPER` as keyof KS5DestinationsRow]
+      ),
+      notCaptured: cleanValue(
+        row[`${prefix}_NOT_CAPTUREDPER` as keyof KS5DestinationsRow]
+      ),
     },
   },
 });
