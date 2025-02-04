@@ -2,21 +2,49 @@
 
 import { Table, TableProps } from 'antd';
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
+import { getRatingColor } from './utils';
+import { ConfigProvider } from 'antd';
+
+type ExtendedTableProps = TableProps<any> & {
+  sortFields: {
+    field: string;
+    order: 'ascend' | 'descend';
+  }[];
+};
+
 
 // Minimal client component just for handling interactions
 export function ClientTableWrapper({
-  columns,
   dataSource,
   pagination,
-  sortField,
-  sortOrder,
-}: TableProps<any> & {
-  sortField?: string;
-  sortOrder?: string;
-}) {
+}: ExtendedTableProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
+
+  const columns = [
+    {
+      title: 'School Name',
+      dataIndex: 'name',
+      width: '40%',
+    },
+    {
+      title: 'Type',
+      dataIndex: 'type',
+      width: '20%',
+    },
+    {
+      title: 'Rating',
+      dataIndex: 'rating',
+      width: '20%',
+      render: (rating: string) => (
+        <span className={`font-medium ${getRatingColor(rating)}`}>
+          {rating}
+        </span>
+      ),
+    },
+    // ... other columns
+  ];
 
   const handleTableChange: TableProps<any>['onChange'] = (
     pagination,
@@ -38,13 +66,15 @@ export function ClientTableWrapper({
   };
 
   return (
-    <Table
-      columns={columns}
-      dataSource={dataSource}
-      pagination={pagination}
-      onChange={handleTableChange}
-      rowKey="id"
-      scroll={{ y: 'calc(100vh - 300px)' }}
-    />
+    <ConfigProvider>
+      <Table
+        columns={columns}
+        dataSource={dataSource}
+        pagination={pagination}
+        onChange={handleTableChange}
+        rowKey="id"
+        scroll={{ y: 'calc(100vh - 300px)' }}
+      />
+    </ConfigProvider>
   );
 } 

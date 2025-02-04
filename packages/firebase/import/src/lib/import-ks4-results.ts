@@ -4,7 +4,7 @@ import {
   ImportResult,
   BATCH_SIZE,
   parseAndValidateCSV,
-} from './shapes';
+} from './helpers';
 import {
   KS4ResultsSchema,
   shouldProcessRow,

@@ -1,5 +1,5 @@
-export function getRatingColor(rating: string): string {
-  switch (rating.toLowerCase()) {
+export function getRatingColor(rating?: string): string {
+  switch (rating?.toLowerCase()) {
     case 'outstanding':
       return 'text-green-600';
     case 'good':

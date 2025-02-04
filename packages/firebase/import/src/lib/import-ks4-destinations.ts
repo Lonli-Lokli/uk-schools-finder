@@ -4,7 +4,7 @@ import {
   ImportResult,
   BATCH_SIZE,
   parseAndValidateCSV,
-} from './shapes';
+} from './helpers';
 import { KS4DestinationsSchema } from './schemas/ks4-destinations.schema';
 import type { KS4DestinationsRow } from './schemas/ks4-destinations.schema';
 
@@ -242,14 +242,13 @@ export async function importKS4Destinations(
     return {
       success: true,
       count: processedCount,
-      errors: [],
     };
   } catch (error) {
     console.error('KS4 destinations import error:', error);
     return {
       success: false,
       count: 0,
-      errors: [(error as Error).message],
+      error: (error as Error).message,
     };
   }
 }

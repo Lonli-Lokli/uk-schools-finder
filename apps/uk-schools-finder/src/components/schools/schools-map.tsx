@@ -1,17 +1,26 @@
 import dynamic from 'next/dynamic';
-import { School } from '../../shapes';
+import { SchoolDm } from '../../shapes';
+
 
 // Dynamically import the client-side map component with no SSR
 const ClientMap = dynamic(
   () => import('./client-map').then(mod => mod.ClientMap),
-  { ssr: false }
+  { 
+    ssr: false,
+    loading: () => (
+      <div className="h-full w-full flex items-center justify-center bg-gray-100">
+        Loading map...
+      </div>
+    )
+  }
 );
 
 type SchoolsMapProps = {
-  schools: School[];
+  schools: SchoolDm[];
   center?: [number, number];
   zoom?: number;
 };
+
 
 // Server Component
 export function SchoolsMap({ 

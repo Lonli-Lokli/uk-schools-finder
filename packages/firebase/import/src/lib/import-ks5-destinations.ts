@@ -8,7 +8,7 @@ import {
   ImportParams,
   ImportResult,
   parseAndValidateCSV,
-} from './shapes';
+} from './helpers';
 
 // Helper function to ensure no undefined values
 function cleanValue<T>(value: T): T | null {
@@ -37,11 +37,6 @@ export async function importKS5Destinations(
         error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
     }
-
-    return {
-      success: true,
-      count: rows.length,
-    };
 
     const validRows = rows.filter((row) => row.URN && row.RECTYPE === '1');
     const totalBatches = Math.ceil(validRows.length / BATCH_SIZE);
@@ -116,14 +111,13 @@ export async function importKS5Destinations(
     return {
       success: true,
       count: processedCount,
-      errors: [],
     };
   } catch (error) {
     console.error('KS5 destinations import error:', error);
     return {
       success: false,
       count: 0,
-      errors: [(error as Error).message],
+      error: (error as Error).message,
     };
   }
 }

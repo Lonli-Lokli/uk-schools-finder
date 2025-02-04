@@ -4,9 +4,8 @@ import {
   BATCH_SIZE,
   parseAndValidateCSV,
   ImportParams,
-} from './shapes';
+} from './helpers';
 import { RegionRowSchema, RegionRow } from './schemas/regions';
-import { Firestore } from 'firebase/firestore';
 
 interface RegionDoc {
   name: string;
@@ -83,14 +82,13 @@ export async function importRegions(
     return {
       success: true,
       count: processedCount,
-      errors: [],
     };
   } catch (error) {
     console.error('Region import error:', error);
     return {
       success: false,
       count: 0,
-      errors: [(error as Error).message],
+      error: (error as Error).message,
     };
   }
 }

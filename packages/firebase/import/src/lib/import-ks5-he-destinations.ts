@@ -1,7 +1,7 @@
 import { doc, writeBatch } from 'firebase/firestore';
 import { KS5HEDestinationsRow } from './schemas/ks5-he-destinations';
 import { KS5HEDestinationsSchema } from './schemas/ks5-he-destinations';
-import { ImportParams, ImportResult, parseAndValidateCSV } from './shapes';
+import { ImportParams, ImportResult, parseAndValidateCSV } from './helpers';
 
 
 const BATCH_SIZE = 500;
@@ -28,11 +28,6 @@ export async function importKS5HEDestinations(
         error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
       };
     }
-
-    return {
-      success: true,
-      count: parsedRows.length,
-    };
 
     let processedCount = 0;
     // Skip non-school records

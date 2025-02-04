@@ -1,4 +1,4 @@
-import { doc, Firestore, writeBatch } from 'firebase/firestore';
+import { doc, writeBatch } from 'firebase/firestore';
 import { parse, format, isValid } from 'date-fns';
 import { geohashForLocation } from 'geofire-common';
 import proj4 from 'proj4';
@@ -7,15 +7,17 @@ import {
   BATCH_SIZE,
   parseAndValidateCSV,
   ImportParams,
-} from './shapes';
+  convertToLatLong,
+} from './helpers';
 import { SchoolRow, SchoolRowSchema } from './schemas/schools';
-
-// Define the OSGB36 (EPSG:27700) and WGS84 (EPSG:4326) projections
-proj4.defs(
-  'EPSG:27700',
-  '+proj=tmerc +lat_0=49 +lon_0=-2 +k=0.9996012717 +x_0=400000 +y_0=-100000 +ellps=airy +towgs84=446.448,-125.157,542.06,0.15,0.247,0.842,-20.489 +units=m +no_defs'
-);
-proj4.defs('EPSG:4326', '+proj=longlat +datum=WGS84 +no_defs');
+import {
+  EstablishmentType,
+  School,
+  Location,
+  SchoolCensus,
+  SchoolInspection,
+  Trust,
+} from './shapes';
 
 export async function importSchools(
   params: ImportParams
@@ -65,11 +67,12 @@ export async function importSchools(
         // Create establishment type document
         if (!processedTypes.has(typeId)) {
           const typeRef = doc(db, 'establishment-types', typeId);
-          batch.set(typeRef, {
+          const typeData: EstablishmentType = {
             name: row['TypeOfEstablishment (name)'],
             group: row['EstablishmentTypeGroup (name)'],
             furtherEducationType: row['FurtherEducationType (name)'],
-          });
+          };
+          batch.set(typeRef, typeData);
           processedTypes.add(typeId);
         }
 
@@ -89,7 +92,7 @@ export async function importSchools(
         // Create location document
         if (locationId && !processedLocations.has(locationId)) {
           const locationRef = doc(db, 'locations', locationId);
-          batch.set(locationRef, {
+          const locationData: Location = {
             street: row.Street,
             locality: row.Locality,
             address3: row.Address3,
@@ -112,8 +115,13 @@ export async function importSchools(
                       geohash: geohashForLocation([latitude, longitude], 9),
                     };
                   })()
-                : {}),
+                : {
+                    latitude: null,
+                    longitude: null,
+                    geohash: null,
+                  }),
             },
+
             administrative: {
               laCode: row['LA (code)'],
               laName: row['LA (name)'],
@@ -128,20 +136,22 @@ export async function importSchools(
               urbanRural: row['UrbanRural (name)'],
               gor: row['GOR (name)'],
             },
-          });
+          };
+          batch.set(locationRef, locationData);
           processedLocations.add(locationId);
         }
 
         // Create trust document
         if (trustId && !processedTrusts.has(trustId)) {
           const trustRef = doc(db, 'trusts', trustId);
-          batch.set(trustRef, {
+          const trustData: Trust = {
             name: row['Trusts (name)'],
             sponsorFlag: row['SchoolSponsorFlag (name)'],
             sponsors: row['SchoolSponsors (name)'],
             federationFlag: row['FederationFlag (name)'],
             federations: row['Federations (name)'],
-          });
+          };
+          batch.set(trustRef, trustData);
           processedTrusts.add(trustId);
         }
 
@@ -149,7 +159,7 @@ export async function importSchools(
         if (row.CensusDate) {
           const censusId = createCensusId(urn, row.CensusDate);
           const censusRef = doc(db, 'school-census', censusId);
-          batch.set(censusRef, {
+          const censusData: SchoolCensus = {
             schoolUrn: urn,
             date: row.CensusDate,
             pupils: row.NumberOfPupils,
@@ -157,7 +167,8 @@ export async function importSchools(
             girls: row.NumberOfGirls,
             fsmPercentage: row.PercentageFSM,
             fsm: row.FSM,
-          });
+          };
+          batch.set(censusRef, censusData);
         }
 
         // Create inspection document
@@ -167,21 +178,21 @@ export async function importSchools(
             row.DateOfLastInspectionVisit
           );
           const inspectionRef = doc(db, 'school-inspections', inspectionId);
-          batch.set(inspectionRef, {
+          const inspectionData: SchoolInspection = {
             schoolUrn: urn,
             date: row.DateOfLastInspectionVisit,
             bsoInspectorate: row['BSOInspectorateName (name)'],
             report: row.InspectorateReport,
             nextVisit: row.NextInspectionVisit,
             inspectorateName: row['InspectorateName (name)'],
-          });
+          };
+          batch.set(inspectionRef, inspectionData);
         }
 
         // Create main school document
         const schoolRef = doc(db, 'schools', urn);
-        const schoolData = {
-          // Basic info
-          urn: urn,
+        const schoolData: School = {
+          urn,
           name: row.EstablishmentName || null,
           establishmentNumber: row.EstablishmentNumber || null,
           ukprn: row.UKPRN || null,
@@ -214,12 +225,14 @@ export async function importSchools(
           contact: {
             telephone: row.TelephoneNum || null,
             website: row.SchoolWebsite || null,
-            headTeacher: row.HeadLastName ? {
-              title: row['HeadTitle (name)'] || null,
-              firstName: row.HeadFirstName || null,
-              lastName: row.HeadLastName || null,
-              jobTitle: row.HeadPreferredJobTitle || null,
-            } : null,
+            headTeacher: row.HeadLastName
+              ? {
+                  title: row['HeadTitle (name)'] || null,
+                  firstName: row.HeadFirstName || null,
+                  lastName: row.HeadLastName || null,
+                  jobTitle: row.HeadPreferredJobTitle || null,
+                }
+              : null,
           },
 
           // Additional fields
@@ -228,7 +241,8 @@ export async function importSchools(
           country: row['Country (name)'] || null,
           siteName: row.SiteName || null,
           qabName: row['QABName (name)'] || null,
-          establishmentAccredited: row['EstablishmentAccredited (name)'] || null,
+          establishmentAccredited:
+            row['EstablishmentAccredited (name)'] || null,
           qabReport: row.QABReport || null,
           accreditationExpiryDate: row.AccreditationExpiryDate || null,
 
@@ -236,7 +250,7 @@ export async function importSchools(
         };
 
         // Remove any undefined values
-        Object.keys(schoolData).forEach(key => {
+        Object.keys(schoolData).forEach((key) => {
           if (schoolData[key as keyof typeof schoolData] === undefined) {
             delete schoolData[key as keyof typeof schoolData];
           }
@@ -247,14 +261,15 @@ export async function importSchools(
 
       await batch.commit();
       processedCount += batchRows.length;
-      
+
       // Report progress with additional details
       onProgress?.({
         current: batchNumber,
         total: totalBatches,
-        details: `Processed ${processedCount} of ${validRows.length} schools. ` +
-                `Created ${processedTypes.size} types, ${processedPhases.size} phases, ` +
-                `${processedLocations.size} locations, ${processedTrusts.size} trusts`
+        details:
+          `Processed ${processedCount} of ${validRows.length} schools. ` +
+          `Created ${processedTypes.size} types, ${processedPhases.size} phases, ` +
+          `${processedLocations.size} locations, ${processedTrusts.size} trusts`,
       });
     }
 
@@ -269,14 +284,13 @@ export async function importSchools(
     return {
       success: true,
       count: validRows.length,
-      errors: [],
     };
   } catch (error) {
     console.error('Import error:', error);
     return {
       success: false,
       count: 0,
-      errors: [(error as Error).message],
+      error: (error as Error).message,
     };
   }
 }
@@ -304,27 +318,6 @@ const normalizeTypeId = (type: string): string =>
 const normalizePhaseId = (phase: string): string =>
   `phase_${phase.toLowerCase().replace(/[^a-z0-9]+/g, '_')}`;
 
-function convertToLatLong(easting: number, northing: number) {
-  try {
-    if (!easting || !northing) {
-      return { latitude: 0, longitude: 0 };
-    }
-
-    // Convert from OSGB36 to WGS84
-    const [longitude, latitude] = proj4('EPSG:27700', 'EPSG:4326', [
-      easting,
-      northing,
-    ]);
-
-    return {
-      latitude: Number(latitude.toFixed(6)),
-      longitude: Number(longitude.toFixed(6)),
-    };
-  } catch (error) {
-    console.error('Error converting coordinates:', error);
-    return { latitude: 0, longitude: 0 };
-  }
-}
 
 // Helper functions for generating consistent IDs
 function createCensusId(urn: string, date: string): string {

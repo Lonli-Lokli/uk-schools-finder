@@ -10,27 +10,34 @@ type SearchParams = {
   search?: string;
 };
 
+
+
 export default async function SchoolFinderPage({
   searchParams,
 }: {
   searchParams: SearchParams;
 }) {
+  // Parse all URL parameters on server side
   const page = Number(searchParams.page) || 1;
-  const sortField = searchParams.sort || 'name';
-  const sortOrder = searchParams.order || 'ascend';
+  const sortFields = searchParams.sort?.split(',').map(field => ({
+    field: field.startsWith('-') ? field.slice(1) : field,
+    order: field.startsWith('-') ? 'descend' as const : 'ascend' as const
+  })) || [];
+
   const filters = {
     type: searchParams.type,
     rating: searchParams.rating,
     search: searchParams.search,
   };
 
+  // Get data with parsed parameters
   const { schools, total, pageSize } = await getSchools({
     page,
-    sort: sortField,
-    order: sortOrder,
+    sortFields,
     filters,
   });
 
+  // Pass ready-to-use data to client components
   return (
     <main className="min-h-screen bg-gray-50">
       <div className="container mx-auto p-4">
@@ -41,8 +48,7 @@ export default async function SchoolFinderPage({
               total={total}
               pageSize={pageSize}
               currentPage={page}
-              sortField={sortField}
-              sortOrder={sortOrder}
+              sortFields={sortFields}
             />
           </section>
 

@@ -1,4 +1,5 @@
 import { z, ZodNumber, ZodOptional } from 'zod';
+import { mustBeNumber } from './helpers';
 
 // Helper for optional string fields with default empty string
 const numericString = <T extends ZodNumber | ZodOptional<ZodNumber>>(
@@ -9,7 +10,7 @@ const numericString = <T extends ZodNumber | ZodOptional<ZodNumber>>(
       return a === '' ? 0 : parseInt(a, 10);
     } else if (typeof a === 'number') {
       return a;
-    } else return undefined;
+    } else return null;
   }, schema) as z.ZodEffects<z.ZodTypeAny, number, number>;
 
 const optionalString = () =>
@@ -49,7 +50,7 @@ export const SchoolRowSchema = z.object({
   // Coordinates
   Easting: optionalNumber,
   Northing: optionalNumber,
-  UPRN: optionalNumber,
+  UPRN: mustBeNumber(),
 
   // Classification
   'UrbanRural (name)': optionalString(),

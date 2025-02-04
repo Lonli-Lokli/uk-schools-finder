@@ -7,7 +7,7 @@
     "nx": "nx",
     "graph": "nx graph",
     "clear": "nx reset",
-    "start:app": "nx run uk-schools-finder:start",
+    "start:app": "nx dev uk-schools-finder",
     "start:admin": "nx run firebase-admin:serve",
     "build": "nx build uk-schools-finder"
   },
@@ -33,7 +33,7 @@
     "proj4": "^2.15.0",
     "react": "18.3.1",
     "react-dom": "18.3.1",
-    "react-leaflet": "^5.0.0",
+    "react-leaflet": "4.2.1",
     "vite-plugin-node-polyfills": "^0.23.0",
     "zod": "^3.24.1"
   },

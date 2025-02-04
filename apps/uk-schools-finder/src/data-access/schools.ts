@@ -1,22 +1,25 @@
 import { initializeClientFirebase } from '@lonli-lokli/firebase/setup-client';
-import { collection, query as firestoreQuery, where, orderBy, limit, startAfter, getDocs } from 'firebase/firestore';
-import { School } from '../shapes';
+import { collection, query as firestoreQuery, where, orderBy, limit, startAfter, getDocs, getDoc, doc } from 'firebase/firestore';
+import { SchoolDm, LocationDm, EstablishmentTypeDm, TrustDm } from '../shapes';
 
 type FilterRecord = Record<string, string | undefined>;
 
 type GetSchoolsParams = {
   page: number;
-  sort: string;
-  order: string;
   filters?: FilterRecord;
+  sortFields: SortField[];
 };
 
 const { db } = initializeClientFirebase();
 
+type SortField = {
+  field: string;
+  order: 'ascend' | 'descend';
+};
+
 export async function getSchools({
   page,
-  sort,
-  order,
+  sortFields,
   filters = {},
 }: GetSchoolsParams) {
   const pageSize = 10;
@@ -32,7 +35,9 @@ export async function getSchools({
     }
   });
 
-  constraints.push(orderBy(sort, order === 'descend' ? 'desc' : 'asc'));
+  sortFields.forEach(sort => {
+    constraints.push(orderBy(sort.field, sort.order === 'descend' ? 'desc' : 'asc'));
+  })
   constraints.push(limit(pageSize));
   
   if (page > 1) {
@@ -43,7 +48,29 @@ export async function getSchools({
   
   const finalQuery = firestoreQuery(query, ...constraints);
   const snapshot = await getDocs(finalQuery);
-  const schools = snapshot.docs.map<School>(doc => ({ id: doc.id, ...doc.data() as any}));
+  
+  // Fetch all referenced data for each school
+  const schoolsWithRefs = await Promise.all(
+    snapshot.docs.map(async (document) => {
+      const school: Partial<SchoolDm> = { id: document.id, ...document.data() } ;
+      
+      // Parallel fetch all references
+      const [location, type, trust] = await Promise.all([
+        school.locationId ? getDoc(doc(db, 'locations', school.locationId)) : null,
+        school.typeId ? getDoc(doc(db, 'establishment-types', school.typeId)) : null,
+        school.trustId ? getDoc(doc(db, 'trusts', school.trustId)) : null,
+      ]);
 
-  return { schools, total: snapshot.size, pageSize };
+      return {
+        ...school,
+        location: location?.data() as LocationDm,
+        establishmentType: type?.data() as EstablishmentTypeDm,
+        trust: trust?.data() as TrustDm,
+
+      } as SchoolDm;
+    })
+  );
+
+  console.log(schoolsWithRefs.length)
+  return { schools: schoolsWithRefs, total: snapshot.size, pageSize };
 } 

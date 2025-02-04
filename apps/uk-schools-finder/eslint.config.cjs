@@ -17,6 +17,6 @@ module.exports = [
   ...baseConfig,
   ...nx.configs['flat/react-typescript'],
   {
-    ignores: ['.next/**/*'],
+    ignores: ['.next/**/*', 'custom-typings.d.ts'],
   },
 ];
