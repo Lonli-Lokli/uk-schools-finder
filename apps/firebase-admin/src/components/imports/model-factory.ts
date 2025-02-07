@@ -125,18 +125,25 @@ export function createImportModel<TRow, TBatch>(
       details: 'Parsing data started...',
     });
     const rows = await processor.parse(csvData);
-    scopedProgressUpdated({
-      details: 'Parsing data finished...',
-    });
     if (rows.type === 'error') {
       throw new Error(rows.message);
     }
 
+    scopedProgressUpdated({
+      details: 'Transforming data started...',
+    });
+
+
     const batch = await processor.transform(rows.rows, year);
+
+    scopedProgressUpdated({
+      details: 'Uploading data started...',
+    });
 
     switch (storage) {
       case 'firebase':
         return processor.upload.firebase(batch, {
+
           type: 'firebase',
           db: db,
           year: year,
