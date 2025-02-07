@@ -1,11 +1,10 @@
-import { Layout, Menu, Typography } from 'antd';
+import { Layout, Menu } from 'antd';
 import { DatabaseOutlined, SettingOutlined } from '@ant-design/icons';
 import { ImportPanel } from '../components/imports/import-panel';
 import { SignIn } from '@lonli-lokli/sign-in';
 import 'antd/dist/reset.css';
 
 const { Header, Content, Sider } = Layout;
-const { Title } = Typography;
 
 export function App() {
   return (
@@ -16,9 +15,9 @@ export function App() {
           <SignIn />
         </div>
       </Header>
-      
+
       <Layout className="mt-16">
-        <Sider 
+        <Sider
           width={240}
           className="bg-white overflow-auto h-[calc(100vh-64px)] fixed left-0"
           breakpoint="lg"
@@ -31,26 +30,25 @@ export function App() {
             defaultOpenKeys={['data']}
             style={{ height: '100%', borderRight: 0 }}
           >
-            <Menu.SubMenu 
-              key="data" 
-              icon={<DatabaseOutlined />} 
+            <Menu.SubMenu
+              key="data"
+              icon={<DatabaseOutlined />}
               title="Data Management"
             >
               <Menu.Item key="imports">Data Import</Menu.Item>
             </Menu.SubMenu>
-            <Menu.SubMenu 
-              key="settings" 
-              icon={<SettingOutlined />} 
+            <Menu.SubMenu
+              key="settings"
+              icon={<SettingOutlined />}
               title="Settings"
             >
               <Menu.Item key="firebase">Firebase Config</Menu.Item>
             </Menu.SubMenu>
           </Menu>
         </Sider>
-        
+
         <Layout className="ml-[240px] lg:ml-[240px] p-4 lg:p-6">
           <Content>
-            <Title level={2} className="mb-6">Data Import</Title>
             <ImportPanel />
           </Content>
         </Layout>

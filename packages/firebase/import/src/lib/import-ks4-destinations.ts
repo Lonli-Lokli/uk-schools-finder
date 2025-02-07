@@ -11,55 +11,57 @@ export async function uploadKS4Destinations(
   try {
     const { db, onProgress } = options;
 
+    // Upload main collection
+    const totalMainBatches = Math.ceil(batch.main.length / BATCH_SIZE);
+    for (let i = 0; i < batch.main.length; i += BATCH_SIZE) {
+      const currentBatch = writeBatch(db);
+      const items = batch.main.slice(i, i + BATCH_SIZE);
 
-  // Upload main collection
-  const totalMainBatches = Math.ceil(batch.main.length / BATCH_SIZE);
-  for (let i = 0; i < batch.main.length; i += BATCH_SIZE) {
-    const currentBatch = writeBatch(db);
-    const items = batch.main.slice(i, i + BATCH_SIZE);
+      for (const item of items) {
+        const docRef = doc(db, 'ks4-destinations', item.id);
+        currentBatch.set(docRef, item.data);
+      }
 
-    for (const item of items) {
-      const docRef = doc(db, 'ks4-destinations', item.id);
-      currentBatch.set(docRef, item.data);
+      await currentBatch.commit();
+      onProgress?.({
+        current: Math.floor(i / BATCH_SIZE) + 1,
+        total: totalMainBatches,
+        details: `Uploading main collection: ${i + BATCH_SIZE} of ${
+          batch.main.length
+        }`,
+      });
     }
 
-    await currentBatch.commit();
-    onProgress?.({
-      current: Math.floor(i / BATCH_SIZE) + 1,
-      total: totalMainBatches,  
-      details: `Uploading main collection: ${i + BATCH_SIZE} of ${batch.main.length}`
-    });
-  }
+    // Upload details collection
+    const totalDetailsBatches = Math.ceil(batch.details.length / BATCH_SIZE);
+    for (let i = 0; i < batch.details.length; i += BATCH_SIZE) {
+      const currentBatch = writeBatch(db);
+      const items = batch.details.slice(i, i + BATCH_SIZE);
 
-  // Upload details collection
-  const totalDetailsBatches = Math.ceil(batch.details.length / BATCH_SIZE);
-  for (let i = 0; i < batch.details.length; i += BATCH_SIZE) {
-    const currentBatch = writeBatch(db);
-    const items = batch.details.slice(i, i + BATCH_SIZE);
+      for (const item of items) {
+        const docRef = doc(db, 'ks4-destinations-details', item.id);
+        currentBatch.set(docRef, item.data);
+      }
 
-    for (const item of items) {
-      const docRef = doc(db, 'ks4-destinations-details', item.id);
-      currentBatch.set(docRef, item.data);
-    }
-
-    await currentBatch.commit();
-    onProgress?.({
-      current: Math.floor(i / BATCH_SIZE) + 1,
-      total: totalDetailsBatches,
-        details: `Uploading details collection: ${i + BATCH_SIZE} of ${batch.details.length}`
+      await currentBatch.commit();
+      onProgress?.({
+        current: Math.floor(i / BATCH_SIZE) + 1,
+        total: totalDetailsBatches,
+        details: `Uploading details collection: ${i + BATCH_SIZE} of ${
+          batch.details.length
+        }`,
       });
     }
 
     return {
       success: true,
-      count: batch.main.length + batch.details.length
+      count: batch.main.length + batch.details.length,
     };
   } catch (error) {
     return {
       success: false,
       count: 0,
-      error: error instanceof Error ? error.message : 'Unknown error'
+      error: error instanceof Error ? error.message : 'Unknown error',
     };
   }
-}
 }

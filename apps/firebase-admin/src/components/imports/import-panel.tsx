@@ -85,7 +85,7 @@ export const importTabs = [
         'supabase': null!
       }
     }),
-    fileName: 'england_regions.csv',
+    fileName: 'la_and_region_codes_meta.csv',
     description: 'Import regions data.',
 
   },

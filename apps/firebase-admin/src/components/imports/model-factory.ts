@@ -117,11 +117,21 @@ export function createImportModel<TRow, TBatch>(
 
   processFileFx.use(async ({ file, year, storage }) => {
     const scopedProgressUpdated = progressUpdated;
+    scopedProgressUpdated({
+      details: 'File loading...',
+    });
     const csvData = await file.text();
+    scopedProgressUpdated({
+      details: 'Parsing data started...',
+    });
     const rows = await processor.parse(csvData);
+    scopedProgressUpdated({
+      details: 'Parsing data finished...',
+    });
     if (rows.type === 'error') {
       throw new Error(rows.message);
     }
+
     const batch = await processor.transform(rows.rows, year);
 
     switch (storage) {
