@@ -1,206 +1,59 @@
 import { doc, writeBatch, arrayUnion } from 'firebase/firestore';
-import {
-  KS5DestinationsSchema,
-  KS5DestinationsRow,
-} from './schemas/ks5-destinations';
-import {
-  BATCH_SIZE,
-  ImportParams,
-  ImportResult,
-  parseAndValidateCSV,
-} from './helpers';
 
-// Helper function to ensure no undefined values
-function cleanValue<T>(value: T): T | null {
-  return value === undefined ? null : value;
-}
+import { BATCH_SIZE } from './helpers';
+import { KS5DestinationsBatch } from '@lonli-lokli/data-transformers';
+import { FirebaseImportParams } from '@lonli-lokli/shapes';
 
-export async function importKS5Destinations(
-  params: ImportParams
-): Promise<ImportResult> {
-  const { db, csvData, year, onProgress } = params;
-  try {
+export async function uploadKS5Destinations(
+  batch: KS5DestinationsBatch,
+  { db, onProgress }: FirebaseImportParams
+) {
+  // Upload main collection
+  const totalMainBatches = Math.ceil(batch.main.length / BATCH_SIZE);
+  for (let i = 0; i < batch.main.length; i += BATCH_SIZE) {
+    const currentBatch = writeBatch(db);
+    const items = batch.main.slice(i, i + BATCH_SIZE);
+
+    for (const item of items) {
+      const docRef = doc(db, 'school-destinations', item.id);
+      currentBatch.set(docRef, item.data);
+    }
+
+    await currentBatch.commit();
     onProgress?.({
-      details: `Parsing file...`,
+      current: Math.floor(i / BATCH_SIZE) + 1,
+      total: totalMainBatches,
+      details: `Uploading KS5 destinations main: batch ${
+        Math.floor(i / BATCH_SIZE) + 1
+      }/${totalMainBatches}`,
     });
-    const { valid: rows, errors } =
-      await parseAndValidateCSV<KS5DestinationsRow>(
-        csvData,
-        KS5DestinationsSchema as any,
-        (row) => ['1', '3'].includes(row.RECTYPE?.toString() ?? '')
+  }
+
+  // Upload stats collection with array merging
+  const totalStatsBatches = Math.ceil(batch.stats.length / BATCH_SIZE);
+  for (let i = 0; i < batch.stats.length; i += BATCH_SIZE) {
+    const currentBatch = writeBatch(db);
+    const items = batch.stats.slice(i, i + BATCH_SIZE);
+
+    for (const item of items) {
+      const docRef = doc(db, 'school-destinations-stats', item.id);
+      currentBatch.set(
+        docRef,
+        {
+          id: item.id,
+          destinations: arrayUnion(item.data),
+        },
+        { merge: true }
       );
-
-    if (errors.length > 0) {
-      return {
-        success: false,
-        count: 0,
-        error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
-      };
     }
 
-    const validRows = rows.filter((row) => row.URN && row.RECTYPE === '1');
-    const totalBatches = Math.ceil(validRows.length / BATCH_SIZE);
-    let processedCount = 0;
-
-    for (let i = 0; i < validRows.length; i += BATCH_SIZE) {
-      const batch = writeBatch(db);
-      const batchRows = validRows.slice(i, i + BATCH_SIZE);
-      const currentBatch = Math.floor(i / BATCH_SIZE) + 1;
-
-      for (const row of batchRows) {
-        if (!row.URN || row.RECTYPE !== '1') continue; // Skip non-school records
-
-        const destinationId = `${row.URN}_${year}`;
-        const destinationRef = doc(db, 'school-destinations', destinationId);
-
-        batch.set(destinationRef, {
-          urn: row.URN,
-          year,
-          total: {
-            all: createDestinationStats(row, 'TOT'),
-            disadvantaged: createDestinationStats(row, 'TOT_DIS'),
-            nonDisadvantaged: createDestinationStats(row, 'TOT_NONDIS'),
-          },
-          level3: {
-            all: createDestinationStats(row, 'L3'),
-            disadvantaged: createDestinationStats(row, 'L3_DIS'),
-            nonDisadvantaged: createDestinationStats(row, 'L3_NONDIS'),
-          },
-          level2: {
-            all: createDestinationStats(row, 'L2'),
-            disadvantaged: createDestinationStats(row, 'L2_DIS'),
-            nonDisadvantaged: createDestinationStats(row, 'L2_NONDIS'),
-          },
-          otherLevels: {
-            all: createDestinationStats(row, 'LALLOTH'),
-            disadvantaged: createDestinationStats(row, 'LALLOTH_DIS'),
-            nonDisadvantaged: createDestinationStats(row, 'LALLOTH_NONDIS'),
-          },
-        });
-
-        // Update stats document
-        const statsRef = doc(db, 'school-destination-stats', row.URN);
-        const newDestination = {
-          year,
-          higherEducation: row.TOT_HEPER,
-          furtherEducation: row.TOT_FEPER,
-          employment: row.TOT_EMPLOYMENTPER,
-        };
-
-        batch.set(
-          statsRef,
-          {
-            id: row.URN,
-            destinations: arrayUnion(newDestination),
-          },
-          { merge: true }
-        );
-      }
-
-      await batch.commit();
-      processedCount += batchRows.length;
-
-      // Report progress
-      onProgress?.({
-        current: currentBatch,
-        total: totalBatches,
-        details: `Processed ${processedCount} of ${validRows.length} records`,
-      });
-    }
-
-    return {
-      success: true,
-      count: processedCount,
-    };
-  } catch (error) {
-    console.error('KS5 destinations import error:', error);
-    return {
-      success: false,
-      count: 0,
-      error: (error as Error).message,
-    };
+    await currentBatch.commit();
+    onProgress?.({
+      current: Math.floor(i / BATCH_SIZE) + 1,
+      total: totalStatsBatches,
+      details: `Uploading KS5 destinations stats: batch ${
+        Math.floor(i / BATCH_SIZE) + 1
+      }/${totalStatsBatches}`,
+    });
   }
 }
-
-const createDestinationStats = (
-  row: KS5DestinationsRow,
-  prefix:
-    | 'TOT'
-    | 'TOT_DIS'
-    | 'TOT_NONDIS'
-    | 'L3'
-    | 'L3_DIS'
-    | 'L3_NONDIS'
-    | 'L2'
-    | 'L2_DIS'
-    | 'L2_NONDIS'
-    | 'LALLOTH'
-    | 'LALLOTH_DIS'
-    | 'LALLOTH_NONDIS'
-) => ({
-  cohortSize: cleanValue(row[`${prefix}_COHORT` as keyof KS5DestinationsRow]),
-  destinations: {
-    overall: cleanValue(row[`${prefix}_OVERALL` as keyof KS5DestinationsRow]),
-    education: {
-      total: cleanValue(row[`${prefix}_EDUCATION` as keyof KS5DestinationsRow]),
-      furtherEducation: cleanValue(
-        row[`${prefix}_FE` as keyof KS5DestinationsRow]
-      ),
-      higherEducation: cleanValue(
-        row[`${prefix}_HE` as keyof KS5DestinationsRow]
-      ),
-      other: cleanValue(row[`${prefix}_OTHER_EDU` as keyof KS5DestinationsRow]),
-    },
-    employment: {
-      total: cleanValue(
-        row[`${prefix}_EMPLOYMENT` as keyof KS5DestinationsRow]
-      ),
-      apprenticeships: cleanValue(
-        row[`${prefix}_APPREN` as keyof KS5DestinationsRow]
-      ),
-    },
-    other: {
-      notSustained: cleanValue(
-        row[`${prefix}_NOT_SUSTAINED` as keyof KS5DestinationsRow]
-      ),
-      notCaptured: cleanValue(
-        row[`${prefix}_NOT_CAPTURED` as keyof KS5DestinationsRow]
-      ),
-    },
-  },
-  percentages: {
-    overall: cleanValue(
-      row[`${prefix}_OVERALLPER` as keyof KS5DestinationsRow]
-    ),
-    education: {
-      total: cleanValue(
-        row[`${prefix}_EDUCATIONPER` as keyof KS5DestinationsRow]
-      ),
-      furtherEducation: cleanValue(
-        row[`${prefix}_FEPER` as keyof KS5DestinationsRow]
-      ),
-      higherEducation: cleanValue(
-        row[`${prefix}_HEPER` as keyof KS5DestinationsRow]
-      ),
-      other: cleanValue(
-        row[`${prefix}_OTHER_EDUPER` as keyof KS5DestinationsRow]
-      ),
-    },
-    employment: {
-      total: cleanValue(
-        row[`${prefix}_EMPLOYMENTPER` as keyof KS5DestinationsRow]
-      ),
-      apprenticeships: cleanValue(
-        row[`${prefix}_APPRENPER` as keyof KS5DestinationsRow]
-      ),
-    },
-    other: {
-      notSustained: cleanValue(
-        row[`${prefix}_NOT_SUSTAINEDPER` as keyof KS5DestinationsRow]
-      ),
-      notCaptured: cleanValue(
-        row[`${prefix}_NOT_CAPTUREDPER` as keyof KS5DestinationsRow]
-      ),
-    },
-  },
-});

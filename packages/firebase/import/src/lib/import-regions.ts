@@ -1,94 +1,30 @@
 import { doc, writeBatch } from 'firebase/firestore';
-import {
-  ImportResult,
-  BATCH_SIZE,
-  parseAndValidateCSV,
-  ImportParams,
-} from './helpers';
-import { RegionRowSchema, RegionRow } from './schemas/regions';
+import { BATCH_SIZE } from './helpers';
+import { RegionBatch } from '@lonli-lokli/data-transformers';
+import { FirebaseImportParams } from '@lonli-lokli/shapes';
 
-interface RegionDoc {
-  name: string;
-  subRegions: {
-    [leaCode: string]: {
-      name: string;
-    };
-  };
-}
+export async function uploadRegions(
+  batch: RegionBatch,
+  { db, onProgress }: FirebaseImportParams
+) {
+  // Upload main collection
+  const totalMainBatches = Math.ceil(batch.main.length / BATCH_SIZE);
+  for (let i = 0; i < batch.main.length; i += BATCH_SIZE) {
+    const currentBatch = writeBatch(db);
+    const items = batch.main.slice(i, i + BATCH_SIZE);
 
-export async function importRegions(
-  params: ImportParams
-): Promise<ImportResult> {
-  const { db, csvData, onProgress } = params;
-
-  try {
-    onProgress({ details: `Parsing file...` });
-    const { valid: rows, errors } = await parseAndValidateCSV<RegionRow>(
-      csvData,
-      RegionRowSchema as any
-    );
-
-    if (errors.length > 0) {
-      return {
-        success: false,
-        count: 0,
-        error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
-      };
+    for (const item of items) {
+      const docRef = doc(db, 'regions', item.id);
+      currentBatch.set(docRef, item.data);
     }
 
-    // First pass: organize data by region
-    const regions = new Map<string, RegionDoc>();
-    for (const row of rows) {
-      const regionId = row.REGION.toString();
-      if (!regions.has(regionId)) {
-        regions.set(regionId, {
-          name: row['REGION NAME'],
-          subRegions: {},
-        });
-      }
-
-      const region = regions.get(regionId)!;
-      region.subRegions[row.LEA] = {
-        name: row['LA Name'],
-      };
-    }
-
-    // Convert to array for batch processing
-    const regionEntries = Array.from(regions.entries());
-    const totalBatches = Math.ceil(regionEntries.length / BATCH_SIZE);
-    let processedCount = 0;
-
-    for (let i = 0; i < regionEntries.length; i += BATCH_SIZE) {
-      const batch = writeBatch(db);
-      const batchEntries = regionEntries.slice(i, i + BATCH_SIZE);
-      const currentBatchNumber = Math.floor(i / BATCH_SIZE) + 1;
-
-      for (const [regionId, regionData] of batchEntries) {
-        const regionRef = doc(db, 'regions', regionId);
-        batch.set(regionRef, regionData);
-      }
-
-      await batch.commit();
-      processedCount += batchEntries.length;
-
-      // Report progress
-      onProgress?.({
-        current: currentBatchNumber,
-        total: totalBatches,
-        details: `Processed ${processedCount} of ${regionEntries.length} regions`,
-      });
-    }
-
-    return {
-      success: true,
-      count: processedCount,
-    };
-  } catch (error) {
-    console.error('Region import error:', error);
-    return {
-      success: false,
-      count: 0,
-      error: (error as Error).message,
-    };
+    await currentBatch.commit();
+    onProgress?.({
+      current: Math.floor(i / BATCH_SIZE) + 1,
+      total: totalMainBatches,
+      details: `Uploading regions: batch ${
+        Math.floor(i / BATCH_SIZE) + 1
+      }/${totalMainBatches}`,
+    });
   }
 }

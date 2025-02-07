@@ -1,4 +1,4 @@
-import { Tabs } from 'antd';
+import { Tabs, Space } from 'antd';
 import { ImportFile } from './import-file';
 import { createImportModel } from './model-factory';
 import {
@@ -10,6 +10,7 @@ import {
   importRegions,
   importSchools,
 } from '@lonli-lokli/firebase/import';
+import { DataSourceSelector } from './data-source-selector';
 
 export const importTabs = [
   {
@@ -74,11 +75,19 @@ export const importTabs = [
   },
 ];
 
-
 export function ImportPanel() {
   return (
     <div className="p-4">
-      <h1 className="text-2xl font-bold mb-4">Data Import</h1>
+      <Space direction="vertical" size="large" className="w-full">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">Data Import</h1>
+          <Space>
+            <span>Data Source:</span>
+            <DataSourceSelector />
+          </Space>
+        </div>
+      </Space>
+
       <Tabs defaultActiveKey="ks4-results">
         {importTabs.map((tab) => (
           <Tabs.TabPane key={tab.key} tab={tab.label}>

@@ -1,0 +1,19 @@
+{
+  "name": "data-transformers",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/data-transformers/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/data-transformers",
+        "main": "packages/data-transformers/src/index.ts",
+        "tsConfig": "packages/data-transformers/tsconfig.lib.json",
+        "assets": ["packages/data-transformers/*.md"]
+      }
+    }
+  }
+}

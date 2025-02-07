@@ -1,283 +1,69 @@
 import { doc, writeBatch } from 'firebase/firestore';
-import {
-  ImportParams,
-  ImportResult,
-  BATCH_SIZE,
-  parseAndValidateCSV,
-} from './helpers';
-import {
-  KS4ResultsSchema,
-  shouldProcessRow,
-} from './schemas/ks4-results.schema';
-import type { KS4ResultsRow } from './schemas/ks4-results.schema';
 
-export async function importKS4Results(
-  params: ImportParams
-): Promise<ImportResult> {
-  const { csvData, year, db, onProgress } = params;
+import { KS4ResultsBatch } from '@lonli-lokli/data-transformers';
+import { FirebaseImportParams } from '@lonli-lokli/shapes';
+import { BATCH_SIZE } from './helpers';
 
-  try {
-    onProgress({ details: `Parsing file...` });
+export async function uploadKS4Results(
+  batch: KS4ResultsBatch,
+  { db, onProgress }: FirebaseImportParams
+) {
+  // Upload main collection
+  const totalMainBatches = Math.ceil(batch.main.length / BATCH_SIZE);
+  for (let i = 0; i < batch.main.length; i += BATCH_SIZE) {
+    const currentBatch = writeBatch(db);
+    const items = batch.main.slice(i, i + BATCH_SIZE);
 
-    const { valid: rows, errors } = await parseAndValidateCSV<KS4ResultsRow>(
-      csvData,
-      KS4ResultsSchema as any,
-      shouldProcessRow
-    );
-
-    if (errors.length > 0) {
-      return {
-        success: false,
-        count: 0,
-        error: `Failures: ${errors.length}. First error happens on row ${errors[0].row}: ${errors[0].error.message}`,
-      };
+    for (const item of items) {
+      const docRef = doc(db, 'school-ks4-results', item.id);
+      currentBatch.set(docRef, item.data);
     }
 
-    const validRows = rows.filter((row) => row.URN && row.RECTYPE === '1');
-    const totalBatches = Math.ceil(validRows.length / BATCH_SIZE);
-    let processedCount = 0;
+    await currentBatch.commit();
+    onProgress?.({
+      current: Math.floor(i / BATCH_SIZE) + 1,
+      total: totalMainBatches,
+      details: `Uploading KS4 results main: batch ${
+        Math.floor(i / BATCH_SIZE) + 1
+      }/${totalMainBatches}`,
+    });
+  }
 
-    for (let i = 0; i < validRows.length; i += BATCH_SIZE) {
-      const currentBatch = writeBatch(db);
-      const batchRows = validRows.slice(i, i + BATCH_SIZE);
-      const currentBatchNumber = Math.floor(i / BATCH_SIZE) + 1;
-
-      for (const row of batchRows) {
-        const docId = `${row.URN}_${year}`;
-
-        // 1. Main performance metrics
-        currentBatch.set(doc(db, 'school-ks4-results', docId), {
-          urn: row.URN,
-          year: year,
-          schoolName: row.SCHNAME,
-          // Core metrics
-          attainment8Score: row.ATT8SCR,
-          progress8Score: row.P8MEA,
-          progress8Lower: row.P8CILOW,
-          progress8Upper: row.P8CIUPP,
-          // English and Maths
-          basics94: row.PTL2BASICS_94,
-          basics95: row.PTL2BASICS_95,
-          ebaccAps: row.EBACCAPS,
-          // Student numbers
-          totalPupils: row.TPUP,
-          disadvantagedPupils: row.PTFSM6CLA1A,
-          // Disadvantaged gaps
-          attainment8ScoreDisadvantaged: row.ATT8SCR_FSM6CLA1A,
-          progress8ScoreDisadvantaged: row.P8MEA_FSM6CLA1A,
-          // Gender gaps
-          attainment8ScoreBoys: row.ATT8SCR_BOYS,
-          attainment8ScoreGirls: row.ATT8SCR_GIRLS,
-          progress8ScoreBoys: row.P8MEA_BOYS,
-          progress8ScoreGirls: row.P8MEA_GIRLS,
-          // Prior attainment
-          lowPriorAttainers: row.PTPRIORLO,
-          middlePriorAttainers: row.PTPRIORAV,
-          highPriorAttainers: row.PTPRIORHI,
-          // EBacc entries
-          ebaccEntry: row.PTEBACC_E_PTQ_EE,
-          ebaccAchievementRate94: row.PTEBACC_94,
-          ebaccAchievementRate95: row.PTEBACC_95,
-          // Metadata
-          lastUpdated: new Date().toISOString(),
-        });
-
-        // 2. Year-specific demographics
-        currentBatch.set(doc(db, 'school-ks4-demographics', docId), {
-          urn: row.URN,
-          year: year,
-          pupils: {
-            total: row.TOTPUPS,
-            examCohort: row.TPUP,
-            boys: row.BPUP,
-            girls: row.GPUP,
-          },
-          characteristics: {
-            eal: row.PTEALGRP2,
-            sen: row.PSEN_ALL4,
-            disadvantaged: row.PTFSM6CLA1A,
-          },
-          lastUpdated: new Date().toISOString(),
-        });
-
-        // 3. Detailed performance data
-        currentBatch.set(doc(db, 'school-ks4-details', docId), {
-          urn: row.URN,
-          year: year,
-
-          // Attainment 8 breakdowns
-          attainment8: {
-            // By subject pillars
-            english: row.ATT8SCRENG,
-            maths: row.ATT8SCRMAT,
-            ebacc: row.ATT8SCREBAC,
-            open: row.ATT8SCROPEN,
-
-            // By prior attainment
-            lowPrior: {
-              overall: row.ATT8SCR_LO,
-              english: row.ATT8SCRENG_LO,
-              maths: row.ATT8SCRMAT_LO,
-              ebacc: row.ATT8SCREBAC_LO,
-              open: row.ATT8SCROPEN_LO,
-            },
-            middlePrior: {
-              overall: row.ATT8SCR_MID,
-              english: row.ATT8SCRENG_MID,
-              maths: row.ATT8SCRMAT_MID,
-              ebacc: row.ATT8SCREBAC_MID,
-              open: row.ATT8SCROPEN_MID,
-            },
-            highPrior: {
-              overall: row.ATT8SCR_HI,
-              english: row.ATT8SCRENG_HI,
-              maths: row.ATT8SCRMAT_HI,
-              ebacc: row.ATT8SCREBAC_HI,
-              open: row.ATT8SCROPEN_HI,
-            },
-          },
-
-          // Progress 8 breakdowns
-          progress8: {
-            // By subject pillars
-            english: {
-              score: row.P8MEAENG,
-              lower: row.P8MEAENG_CILOW,
-              upper: row.P8MEAENG_CIUPP,
-            },
-            maths: {
-              score: row.P8MEAMAT,
-              lower: row.P8MEAMAT_CILOW,
-              upper: row.P8MEAMAT_CIUPP,
-            },
-            ebacc: {
-              score: row.P8MEAEBAC,
-              lower: row.P8MEAEBAC_CILOW,
-              upper: row.P8MEAEBAC_CIUPP,
-            },
-            open: {
-              score: row.P8MEAOPEN,
-              lower: row.P8MEAOPEN_CILOW,
-              upper: row.P8MEAOPEN_CIUPP,
-            },
-          },
-
-          // EBacc detailed breakdowns
-          ebacc: {
-            subjects: {
-              english: {
-                entry: row.PTEBACENG_E_PTQ_EE,
-                achieved94: row.PTEBACENG_94,
-                achieved95: row.PTEBACENG_95,
-              },
-              maths: {
-                entry: row.PTEBACMAT_E_PTQ_EE,
-                achieved94: row.PTEBACMAT_94,
-                achieved95: row.PTEBACMAT_95,
-              },
-              science: {
-                entry: row.PTEBAC2SCI_E_PTQ_EE,
-                achieved94: row.PTEBAC2SCI_94,
-                achieved95: row.PTEBAC2SCI_95,
-              },
-              humanities: {
-                entry: row.PTEBACHUM_E_PTQ_EE,
-                achieved94: row.PTEBACHUM_94,
-                achieved95: row.PTEBACHUM_95,
-              },
-              languages: {
-                entry: row.PTEBACLAN_E_PTQ_EE,
-                achieved94: row.PTEBACLAN_94,
-                achieved95: row.PTEBACLAN_95,
-              },
-            },
-          },
-
-          // Performance by student groups
-          groups: {
-            disadvantaged: {
-              attainment8: row.ATT8SCR_FSM6CLA1A,
-              progress8: {
-                score: row.P8MEA_FSM6CLA1A,
-                lower: row.P8CILOW_FSM6CLA1A,
-                upper: row.P8CIUPP_FSM6CLA1A,
-              },
-            },
-            notDisadvantaged: {
-              attainment8: row.ATT8SCR_NFSM6CLA1A,
-              progress8: {
-                score: row.P8MEA_NFSM6CLA1A,
-                lower: row.P8CILOW_NFSM6CLA1A,
-                upper: row.P8CIUPP_NFSM6CLA1A,
-              },
-            },
-            eal: {
-              attainment8: row.ATT8SCR_EAL,
-              progress8: {
-                score: row.P8MEA_EAL,
-                lower: row.P8CILOW_EAL,
-                upper: row.P8CIUPP_EAL,
-              },
-            },
-            gender: {
-              boys: {
-                attainment8: row.ATT8SCR_BOYS,
-                progress8: {
-                  score: row.P8MEA_BOYS,
-                  lower: row.P8CILOW_BOYS,
-                  upper: row.P8CIUPP_BOYS,
-                },
-              },
-              girls: {
-                attainment8: row.ATT8SCR_GIRLS,
-                progress8: {
-                  score: row.P8MEA_GIRLS,
-                  lower: row.P8CILOW_GIRLS,
-                  upper: row.P8CIUPP_GIRLS,
-                },
-              },
-            },
-          },
-
-          // Original (unadjusted) Progress 8 scores
-          progress8Original: {
-            score: row.P8MEA_ORIG,
-            lower: row.P8CILOW_ORIG,
-            upper: row.P8CIUPP_ORIG,
-          },
-
-          // GCSE vs non-GCSE breakdowns
-          attainment8Open: {
-            gcse: row.ATT8SCROPENG,
-            nonGcse: row.ATT8SCROPENNG,
-          },
-
-          lastUpdated: new Date().toISOString(),
-        });
-      }
-
-      await currentBatch.commit();
-      processedCount += (batchRows.length * 3);
-
-      // Report progress
-      onProgress?.({
-        current: currentBatchNumber,
-        total: totalBatches,
-        details: `Processed ${processedCount} of ${validRows.length} records`,
-      });
+  // Upload demographics collection
+  const totalDemographicsBatches = Math.ceil(batch.demographics.length / BATCH_SIZE);
+  for (let i = 0; i < batch.demographics.length; i += BATCH_SIZE) {
+    const currentBatch = writeBatch(db);
+    const items = batch.demographics.slice(i, i + BATCH_SIZE);
+    
+    for (const item of items) {
+      const docRef = doc(db, 'school-ks4-results-demographics', item.id);
+      currentBatch.set(docRef, item.data);
     }
+    
+    await currentBatch.commit();
+    onProgress?.({
+      current: Math.floor(i / BATCH_SIZE) + 1,
+      total: totalDemographicsBatches,
+      details: `Uploading KS4 results demographics: batch ${Math.floor(i / BATCH_SIZE) + 1}/${totalDemographicsBatches}`,
+    });
+  }
 
-    console.log(`Successfully imported ${processedCount} KS4 results`);
-    return {
-      success: true,
-      count: processedCount,
-    };
-  } catch (error) {
-    console.error('KS4 results import error:', error);
-    return {
-      success: false,
-      count: 0,
-      error: (error as Error).message,
-    };
+  // Upload details collection
+  const totalDetailsBatches = Math.ceil(batch.details.length / BATCH_SIZE);
+  for (let i = 0; i < batch.details.length; i += BATCH_SIZE) {
+    const currentBatch = writeBatch(db);
+    const items = batch.details.slice(i, i + BATCH_SIZE);
+    
+    for (const item of items) {
+      const docRef = doc(db, 'school-ks4-results-details', item.id);
+      currentBatch.set(docRef, item.data);
+    }
+    
+    await currentBatch.commit();
+    onProgress?.({
+      current: Math.floor(i / BATCH_SIZE) + 1,
+      total: totalDetailsBatches,
+      details: `Uploading KS4 results details: batch ${Math.floor(i / BATCH_SIZE) + 1}/${totalDetailsBatches}`,
+    });
   }
 }
