@@ -2,14 +2,15 @@ import { writeBatch, doc } from 'firebase/firestore';
 
 import { KS4DestinationsBatch } from '@lonli-lokli/data-transformers';
 import { BATCH_SIZE } from './helpers';
-import { FirebaseImportParams } from '@lonli-lokli/shapes';
-
+import { FirebaseImportParams, ImportResult } from '@lonli-lokli/shapes';
 
 export async function uploadKS4Destinations(
   batch: KS4DestinationsBatch,
   options: FirebaseImportParams
-) {
-  const { db, onProgress } = options;
+): Promise<ImportResult> {
+  try {
+    const { db, onProgress } = options;
+
 
   // Upload main collection
   const totalMainBatches = Math.ceil(batch.main.length / BATCH_SIZE);
@@ -45,7 +46,20 @@ export async function uploadKS4Destinations(
     onProgress?.({
       current: Math.floor(i / BATCH_SIZE) + 1,
       total: totalDetailsBatches,
-      details: `Uploading details collection: ${i + BATCH_SIZE} of ${batch.details.length}`
-    });
+        details: `Uploading details collection: ${i + BATCH_SIZE} of ${batch.details.length}`
+      });
+    }
+
+    return {
+      success: true,
+      count: batch.main.length + batch.details.length
+    };
+  } catch (error) {
+    return {
+      success: false,
+      count: 0,
+      error: error instanceof Error ? error.message : 'Unknown error'
+    };
   }
+}
 }

@@ -6,7 +6,7 @@ import { parseAndValidateCSV } from './helpers';
 import { ParseResult } from './shapes';
 
 
-export async function ks5DestinationsPars(
+export async function ks5DestinationsParser(
   csvData: string
 ): Promise<ParseResult<KS5DestinationsRow>> {
   const { valid, errors } = await parseAndValidateCSV<KS5DestinationsRow>(

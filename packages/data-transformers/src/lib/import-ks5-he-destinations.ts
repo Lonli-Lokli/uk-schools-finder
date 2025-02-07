@@ -11,8 +11,10 @@ export interface KS5HEDestinationsBatch {
 
 export function transformKS5HEDestinations(
   rows: KS5HEDestinationsRow[],
-  year: string
+  year?: string
 ): KS5HEDestinationsBatch {
+  if (!year) throw new Error('Year is required');
+
   const batch: KS5HEDestinationsBatch = {
     main: [],
   };

@@ -57,10 +57,12 @@ const createDestinationStats = (row: KS5DestinationsRow, basePrefix: StatsPrefix
   };
 };
 
-export function transformKS5Destinations(rows: KS5DestinationsRow[], year: string): KS5DestinationsBatch {
+export function transformKS5Destinations(rows: KS5DestinationsRow[], year?: string): KS5DestinationsBatch {
+  if (!year) throw new Error('Year is required');
   const batch: KS5DestinationsBatch = {
     main: [],
     stats: []
+
   };
 
   for (const row of rows) {

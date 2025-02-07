@@ -19,8 +19,9 @@ export interface KS4DestinationsBatch {
 
 export function transformKS4Destinations(
   rows: KS4DestinationsRow[],
-  year: string
+  year?: string
 ): KS4DestinationsBatch {
+  if (!year) throw new Error('Year is required');
   const batch: KS4DestinationsBatch = {
     main: [],
     details: [],

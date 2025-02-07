@@ -1,23 +1,24 @@
 import { Tabs, Space } from 'antd';
 import { ImportFile } from './import-file';
 import { createImportModel } from './model-factory';
-import {
-  importKS4Destinations,
-  importKS4Results,
-  importKS5Destinations,
-  importKS5HEDestinations,
-  importQuadrants,
-  importRegions,
-  importSchools,
-} from '@lonli-lokli/firebase/import';
 import { DataSourceSelector } from './data-source-selector';
+import { ks4DestinationsParser, ks4ResultsParser, ks5DestinationsParser, ks5HEDestinationsParser, regionsParser, schoolsParser } from '@lonli-lokli/data-parsers';
+import { transformKS4Destinations, transformKS4Results, transformKS5Destinations, transformKS5HEDestinations, transformQuadrants, transformRegions, transformSchools } from '@lonli-lokli/data-transformers';
+import { uploadKS4Destinations, uploadKS4Results, uploadKS5Destinations, uploadKS5HEDestinations, uploadQuadrants, uploadRegions, uploadSchools } from '@lonli-lokli/firebase/import';
 
 export const importTabs = [
   {
     key: 'ks4-results',
     label: 'KS4 Results',
     yearRequired: true,
-    model: createImportModel('ks4-results', importKS4Results),
+    model: createImportModel('ks4-results', {
+      parse: ks4ResultsParser,
+      transform: transformKS4Results,
+      upload: {
+        'firebase': uploadKS4Results,
+        'supabase': null!
+      }
+    }),
     fileName: 'england_ks4provisional.csv',
     description: 'Import KS4 (GCSE) student results data.',
   },
@@ -25,53 +26,101 @@ export const importTabs = [
     key: 'ks4-destinations',
     label: 'KS4 Destinations',
     yearRequired: true,
-    model: createImportModel('ks4-destinations', importKS4Destinations),
+    model: createImportModel('ks4-destinations', {
+        parse: ks4DestinationsParser,
+        transform: transformKS4Destinations,
+      upload: {
+        'firebase': uploadKS4Destinations,
+        'supabase': null!
+      }
+    }),
     fileName: 'england_ks4-pupdest.csv',
     description: 'Import KS4 (GCSE) student destinations data.',
+
   },
 
   {
     key: 'ks5-destinations',
     label: 'KS5 Destinations',
     yearRequired: true,
-    model: createImportModel('ks5-destinations', importKS5Destinations),
+    model: createImportModel('ks5-destinations', {
+      parse: ks5DestinationsParser,
+      transform: transformKS5Destinations,
+      upload: {
+        'firebase': uploadKS5Destinations,
+        'supabase': null!
+      }
+    }),
     fileName: 'england_ks5-studest.csv',
     description: 'Import KS5 (A-Level) student destinations data.',
+
   },
 
   {
     key: 'ks5he-destinations',
     label: 'KS5 HE Destinations',
     yearRequired: true,
-    model: createImportModel('ks5he-destinations', importKS5HEDestinations),
+    model: createImportModel('ks5he-destinations', {
+      parse: ks5HEDestinationsParser,
+      transform: transformKS5HEDestinations,
+      upload: {
+        'firebase': uploadKS5HEDestinations,
+        'supabase': null!
+      }
+    }),
     fileName: 'england_ks5-studest-he.csv',
     description: 'Import KS5 (A-Level) student destinations data.',
+
   },
 
   {
     key: 'regions',
     label: 'Regions',
     yearRequired: true,
-    model: createImportModel('regions', importRegions),
+    model: createImportModel('regions', {
+      parse: regionsParser,
+      transform: transformRegions,
+      upload: {
+        'firebase': uploadRegions,
+        'supabase': null!
+      }
+    }),
     fileName: 'england_regions.csv',
     description: 'Import regions data.',
+
   },
   {
     key: 'schools',
     label: 'Schools',
     yearRequired: false,
-    model: createImportModel('schools', importSchools),
+    model: createImportModel('schools', {
+      parse: schoolsParser,
+      transform: transformSchools,
+      upload: {
+        'firebase': uploadSchools,
+        'supabase': null!
+      }
+    }),
     fileName: 'school-data.csv',
     description:
+
       'Import basic school information including URN, name, and location.',
   },
   {
     key: 'quadrants',
     label: 'Quadrants',
     yearRequired: false,
-    model: createImportModel('quadrants', importQuadrants),
+    model: createImportModel('quadrants', {
+      parse: schoolsParser,
+      transform: transformQuadrants,
+      upload: {
+        'firebase': uploadQuadrants,
+        'supabase': null!
+      }
+    }),
     fileName: 'school-data.csv',
     description: 'Import quadrants data.',
+
   },
 ];
 

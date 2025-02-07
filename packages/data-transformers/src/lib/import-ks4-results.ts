@@ -17,7 +17,8 @@ export interface KS4ResultsBatch {
   }>;
 }
 
-export function transformKS4Results(rows: KS4ResultsRow[], year: string): KS4ResultsBatch {
+export function transformKS4Results(rows: KS4ResultsRow[], year?: string): KS4ResultsBatch {
+  if (!year) throw new Error('Year is required');
   const batch: KS4ResultsBatch = {
 
     main: [],

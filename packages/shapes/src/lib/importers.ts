@@ -8,7 +8,6 @@ export interface ImportResult {
 }
 
 type BaseImportParams = {
-  csvData: string;
   year: string;
   onProgress: (progress: {
     current?: number;

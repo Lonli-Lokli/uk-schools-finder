@@ -1,11 +1,32 @@
-import { ImportParams, ImportResult } from '@lonli-lokli/firebase/import';
 import { initializeClientFirebase } from '@lonli-lokli/firebase/setup-client';
+import {
+  FirebaseImportParams,
+  ImportResult,
+  SupabaseImportParams,
+} from '@lonli-lokli/shapes';
 import { createStore, createEffect, createEvent, sample } from 'effector';
 import { createAction } from 'effector-action';
+import { ParseResult } from '@lonli-lokli/data-parsers';
+import { $dataSource } from './model';
 
 interface Message {
   text: string;
   type: 'success' | 'error' | 'info';
+}
+
+export interface ImportProcessor<TRow, TBatch> {
+  parse: (csvData: string) => Promise<ParseResult<TRow>>;
+  transform: (rows: TRow[], year?: string) => TBatch;
+  upload: {
+    firebase: (
+      batch: TBatch,
+      params: FirebaseImportParams
+    ) => Promise<ImportResult>;
+    supabase: (
+      batch: TBatch,
+      params: SupabaseImportParams
+    ) => Promise<ImportResult>;
+  };
 }
 
 const { db } = initializeClientFirebase();
@@ -16,9 +37,9 @@ export interface Progress {
   details?: string;
 }
 
-export function createImportModel(
+export function createImportModel<TRow, TBatch>(
   name: string,
-  processFunction: (importArgs: ImportParams) => Promise<ImportResult>
+  processor: ImportProcessor<TRow, TBatch>
 ) {
   // Events
   const fileSelected = createEvent<File | null>();
@@ -37,6 +58,7 @@ export function createImportModel(
     {
       file: File;
       year: string;
+      storage: 'firebase' | 'supabase';
     },
     ImportResult,
     Error
@@ -56,7 +78,6 @@ export function createImportModel(
       type: result.success ? ('success' as const) : ('error' as const),
     }),
     target: $message,
-
   });
 
   sample({
@@ -85,19 +106,37 @@ export function createImportModel(
 
   sample({
     clock: uploadStarted,
+    source: $dataSource,
+    fn: (dataSource, { file, year }) => ({
+      file,
+      year,
+      storage: dataSource,
+    }),
     target: processFileFx,
   });
 
-  processFileFx.use(async ({ file, year }) => {
+  processFileFx.use(async ({ file, year, storage }) => {
     const scopedProgressUpdated = progressUpdated;
-    const csvData = await file.text();    
-    return await processFunction({
-      csvData: csvData,
-      year: year,
-      db: db,
-      onProgress: (progress) => scopedProgressUpdated(progress),
-    });
+    const csvData = await file.text();
+    const rows = await processor.parse(csvData);
+    if (rows.type === 'error') {
+      throw new Error(rows.message);
+    }
+    const batch = await processor.transform(rows.rows, year);
 
+    switch (storage) {
+      case 'firebase':
+        return processor.upload.firebase(batch, {
+          type: 'firebase',
+          db: db,
+          year: year,
+          onProgress: (progress: Progress) => scopedProgressUpdated(progress),
+        });
+      case 'supabase':
+        throw new Error('Supabase is not supported yet');
+      default:
+        throw new Error('Unknown storage type: ' + storage);
+    }
   });
 
   $progress
