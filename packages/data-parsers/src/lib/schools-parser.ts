@@ -1,26 +1,10 @@
-
-import {
-  parseAndValidateCSV,
-} from './helpers';
+import { parseAndValidateCSV } from './helpers';
 import { SchoolRow, SchoolRowSchema } from './schemas/schools';
+import { ParseResult } from './shapes';
 
-import { BoundingBox } from './shapes';
-
-interface QuadrantStats {
-  totalQuadrants: number;
-  totalSchools: number;
-  byLevel: Record<
-    number,
-    {
-      quadrants: number;
-      schools: number;
-      minSchools: number;
-      maxSchools: number;
-    }
-  >;
-}
-
-export async function schoolsParser(csvData: string): Promise<ParseResult<SchoolRow>> {
+export async function schoolsParser(
+  csvData: string
+): Promise<ParseResult<SchoolRow>> {
   const { valid, errors } = await parseAndValidateCSV<SchoolRow>(
     csvData,
     SchoolRowSchema as any

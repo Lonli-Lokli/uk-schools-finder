@@ -8,6 +8,7 @@ import { createStore, createEffect, createEvent, sample } from 'effector';
 import { createAction } from 'effector-action';
 import { ParseResult } from '@lonli-lokli/data-parsers';
 import { $dataSource } from './model';
+import { initializeClientSupabase } from '@lonli-lokli/supabase/setup-client';
 
 interface Message {
   text: string;
@@ -30,6 +31,7 @@ export interface ImportProcessor<TRow, TBatch> {
 }
 
 const { db } = initializeClientFirebase();
+const { supabase } = initializeClientSupabase();
 
 export interface Progress {
   current?: number;
@@ -133,7 +135,6 @@ export function createImportModel<TRow, TBatch>(
       details: 'Transforming data started...',
     });
 
-
     const batch = await processor.transform(rows.rows, year);
 
     scopedProgressUpdated({
@@ -143,14 +144,18 @@ export function createImportModel<TRow, TBatch>(
     switch (storage) {
       case 'firebase':
         return processor.upload.firebase(batch, {
-
           type: 'firebase',
           db: db,
           year: year,
           onProgress: (progress: Progress) => scopedProgressUpdated(progress),
         });
       case 'supabase':
-        throw new Error('Supabase is not supported yet');
+        return processor.upload.supabase(batch, {
+          type: 'supabase',
+          db: supabase,
+          year: year,
+          onProgress: (progress: Progress) => scopedProgressUpdated(progress),
+        });
       default:
         throw new Error('Unknown storage type: ' + storage);
     }

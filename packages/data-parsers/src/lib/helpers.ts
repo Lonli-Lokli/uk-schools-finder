@@ -1,5 +1,5 @@
 import { csv2json } from 'csv42';
-import proj4 from 'proj4';
+import { ZodAccelerator, ZodAcceleratorParser } from '@duplojs/zod-accelerator';
 import { Firestore } from 'firebase/firestore';
 import { z, ZodError } from 'zod';
 
@@ -22,6 +22,17 @@ export interface ImportParams {
 // Firestore batch limit is 500, but we might have large documents
 export const BATCH_SIZE = 100;
 
+const acceleratorCache = new WeakMap<z.ZodSchema<any>, ZodAcceleratorParser>();
+
+function getAccelerator<T>(schema: z.ZodSchema<T>): ZodAcceleratorParser {
+  let accelerator = acceleratorCache.get(schema);
+  if (!accelerator) {
+    accelerator = ZodAccelerator.build(schema);
+    acceleratorCache.set(schema, accelerator);
+  }
+  return accelerator;
+}
+
 export async function parseAndValidateCSV<T>(
   content: string,
   schema: z.ZodSchema<T>,
@@ -33,20 +44,38 @@ export async function parseAndValidateCSV<T>(
 ) {
   const valid: T[] = [];
   const errors: { row: number; error: ZodError }[] = [];
-
   const result = csv2json<Partial<T>>(content);
-  for (let i = 0; i < result.length; i++) {
-    const row = result[i];
-    try {
-      if (!shouldProcessRow || shouldProcessRow(row, i, result)) {
-        const validatedRow = await schema.parseAsync(row);
-        valid.push(validatedRow);
-      }
-    } catch (error) {
-      errors.push({ row: i + 1, error: error as ZodError });
+
+  type ValidationResult =
+    | { success: true; row: T }
+    | { success: false; error: ZodError; rowIndex: number }
+    | { success: false; skip: true };
+
+  const accelerator = getAccelerator(schema);
+
+  const validations = result.map((row, index) => {
+    if (!shouldProcessRow || shouldProcessRow(row, index, result)) {
+      return accelerator
+        .parseAsync(row)
+        .then((validRow) => ({ success: true as const, row: validRow }))
+        .catch((error) => ({
+          success: false as const,
+          error,
+          rowIndex: index,
+        }));
     }
-  }
+    return Promise.resolve({ success: false as const, skip: true as const });
+  });
 
-  return { valid: valid, errors };
+  const results = (await Promise.all(validations)) as ValidationResult[];
+
+  results.forEach((result, index) => {
+    if (result.success) {
+      valid.push(result.row);
+    } else if ('error' in result) {
+      errors.push({ row: index + 1, error: result.error });
+    }
+  });
+
+  return { valid, errors };
 }
-

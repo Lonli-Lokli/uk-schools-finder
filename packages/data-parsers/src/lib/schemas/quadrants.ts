@@ -1,11 +1,10 @@
+import { BoundingBoxDm, QuadrantSchoolDm } from '@lonli-lokli/shapes';
 import { geohashForLocation } from 'geofire-common';
-import { BoundingBox, QuadrantSchool } from '../shapes';
 
-export function splitQuadrant(bounds: BoundingBox): BoundingBox[] {
+export function splitQuadrant(bounds: BoundingBoxDm): BoundingBoxDm[] {
   const centerLat = (bounds.ne.lat + bounds.sw.lat) / 2;
   const centerLng = (bounds.ne.lng + bounds.sw.lng) / 2;
   const centerGeohash = geohashForLocation([centerLat, centerLng], 9);
-
 
   return [
     // NW
@@ -56,9 +55,9 @@ export function splitQuadrant(bounds: BoundingBox): BoundingBox[] {
 }
 
 export function assignSchoolsToQuadrant(
-  schools: QuadrantSchool[],
-  bounds: BoundingBox
-): QuadrantSchool[] {
+  schools: QuadrantSchoolDm[],
+  bounds: BoundingBoxDm
+): QuadrantSchoolDm[] {
   return schools.filter(
     (school) =>
       school.location.lat <= bounds.ne.lat &&
@@ -68,7 +67,9 @@ export function assignSchoolsToQuadrant(
   );
 }
 
-export function generateQuadrantId(bounds: BoundingBox, level: number): string {
+export function generateQuadrantId(
+  bounds: BoundingBoxDm,
+  level: number
+): string {
   return `${level}_${bounds.sw.geohash}_${bounds.ne.geohash}`;
 }
-

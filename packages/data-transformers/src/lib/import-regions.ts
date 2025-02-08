@@ -1,5 +1,5 @@
+import { RegionRow } from '@lonli-lokli/data-parsers';
 import { RegionDm } from '@lonli-lokli/shapes';
-import { RegionRow } from 'packages/data-parsers/src/lib/schemas/regions';
 
 export interface RegionBatch {
   main: Array<{

@@ -31,7 +31,11 @@
         "packages/firebase/setup-client/src/index.ts"
       ],
       "@lonli-lokli/shapes": ["packages/shapes/src/index.ts"],
-      "@lonli-lokli/sign-in": ["packages/sign-in/src/index.ts"]
+      "@lonli-lokli/sign-in": ["packages/sign-in/src/index.ts"],
+      "@lonli-lokli/supabase/import": ["packages/supabase/import/src/index.ts"],
+      "@lonli-lokli/supabase/setup-client": [
+        "packages/supabase/setup-client/src/index.ts"
+      ]
     }
   },
   "exclude": ["node_modules", "tmp"]
