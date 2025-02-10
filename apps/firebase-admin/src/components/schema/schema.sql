@@ -2,6 +2,12 @@
 create extension if not exists postgis;
 create extension if not exists btree_gist;
 
+-- Increase RPC timeout in Supabase:
+alter database postgres set statement_timeout = '900s';    -- 5 minutes
+alter role authenticated set statement_timeout = '900s';   -- 5 minutes
+
+
+
 -- Part 2: Create the function
 create or replace function create_import_tables() returns void language plpgsql as $$
 begin

@@ -40,7 +40,6 @@ export function ImportFile({
   const [fileError, setFileError] = useState<string>('');
   const progress = useUnit(model.$progress);
 
-  console.log('progress', progress);
   const handleFileChange = (info: UploadChangeParam<UploadFile<File>>) => {
     setFileError('');
 

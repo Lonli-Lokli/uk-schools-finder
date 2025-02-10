@@ -119,7 +119,6 @@ sample({
 const functions = getFunctions();
 const auth = getAuth();
 auth.onAuthStateChanged((user) => {
-  console.log('User activated', user);
   userChanged(user);
 });
 

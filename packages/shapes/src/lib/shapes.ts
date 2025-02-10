@@ -145,3 +145,14 @@ export interface QuadrantSchoolDm {
     geohash: string;
   };
 }
+
+
+export interface BatchRecord<T> {
+  id: string;
+  data: T;
+}
+
+// Generic batch type - ensures all properties are arrays of records
+export type Batch<T> = {
+  [K in keyof T]: Array<BatchRecord<T[K]>>;
+};
