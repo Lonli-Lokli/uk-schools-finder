@@ -5,7 +5,6 @@ import {
   KS5DestinationsBatch,
   KS5HEDestinationsBatch,
   SchoolBatch,
-  RegionBatch,
   QuadrantBatch,
 } from '@lonli-lokli/data-transformers';
 import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
@@ -30,17 +29,8 @@ export const uploadKS5HEDestinations = (
   params: SupabaseImportParams
 ): Promise<ImportResult> => uploadBatch('ks5-he-destinations', batch, params);
 
-export const uploadSchools = (
-  batch: SchoolBatch,
-  params: SupabaseImportParams
-): Promise<ImportResult> => uploadBatch('schools', batch, params);
+export { uploadSchools } from './school-uploader';
 
-export const uploadRegions = (
-  batch: RegionBatch,
-  params: SupabaseImportParams
-): Promise<ImportResult> => uploadBatch('regions', batch, params);
+export { uploadRegions } from './region-uploader';
 
-export const uploadQuadrants = (
-  batch: QuadrantBatch,
-  params: SupabaseImportParams
-): Promise<ImportResult> => uploadBatch('quadrants', batch, params);
+export { uploadQuadrants } from './quadrant-uploader';

@@ -97,7 +97,7 @@ export async function uploadBatch<T extends keyof BatchTypes>(
 
       return {
         success: false,
-        count: totalProcessed,
+        count: 0,
         error: errorMessage,
       };
     }

@@ -1,12 +1,5 @@
 import { UploadOutlined } from '@ant-design/icons';
-import {
-  Button,
-  Upload,
-  Card,
-  Alert,
-  DatePicker,
-  Progress,
-} from 'antd';
+import { Button, Upload, Card, Alert, DatePicker, Progress } from 'antd';
 import { useUnit } from 'effector-react';
 import { ImportModel } from './model-factory';
 import { UploadChangeParam, UploadFile } from 'antd/es/upload/interface';
