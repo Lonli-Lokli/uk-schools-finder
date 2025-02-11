@@ -72,7 +72,7 @@ export interface LocationDm {
   address3: string;
   town: string;
   county: string;
-  postcode: string;
+  postcode: string | null;
   coordinates: {
     easting: number;
     northing: number;

@@ -2,7 +2,6 @@ import { RegionBatch } from '@lonli-lokli/data-transformers';
 import {
   SupabaseImportParams,
   ImportResult,
-  RegionDm,
 } from '@lonli-lokli/shapes';
 import { identity } from './core';
 import type { Database } from './database.types';

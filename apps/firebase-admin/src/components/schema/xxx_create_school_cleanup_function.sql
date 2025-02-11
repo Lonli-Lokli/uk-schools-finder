@@ -8,7 +8,8 @@ BEGIN
     trusts,
     locations,
     phase_types,
-    establishment_types
+    establishment_types,
+    education_phases
   CASCADE;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

@@ -158,6 +158,98 @@ CREATE TABLE establishments (
         CHECK (updated_at >= created_at)
 );
 
+
+-- Create main destinations table
+
+CREATE TABLE ks4_destinations_main (
+    id text PRIMARY KEY,
+    urn text NOT NULL REFERENCES establishments(urn),
+    year text NOT NULL,
+    sustained numeric,
+    education numeric,
+    employment numeric,
+    apprenticeships numeric,
+    further_education numeric,
+    sixth_form numeric,
+    sixth_form_college numeric,
+    disadvantaged_sustained numeric,
+    non_disadvantaged_sustained numeric,
+    cohort_size numeric,
+    last_updated timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW(),
+    CONSTRAINT ks4_destinations_main_year_check CHECK (year ~ '^\d{4}$')
+);
+
+-- Create details table
+CREATE TABLE ks4_destinations_details (
+    id text PRIMARY KEY,
+    urn text NOT NULL REFERENCES establishments(urn),
+    year text NOT NULL,
+    -- Numbers
+    cohort_number numeric,
+    sustained_number numeric,
+    education_number numeric,
+    employment_number numeric,
+    apprenticeships_number numeric,
+    further_education_number numeric,
+    school_sixth_form_number numeric,
+    sixth_form_college_number numeric,
+    other_education_number numeric,
+    not_sustained_number numeric,
+    unknown_number numeric,
+    -- Disadvantaged
+    disadvantaged_cohort numeric,
+    disadvantaged_sustained_number numeric,
+    disadvantaged_sustained_percentage numeric,
+    disadvantaged_education_number numeric,
+    disadvantaged_education_percentage numeric,
+    disadvantaged_employment_number numeric,
+    disadvantaged_employment_percentage numeric,
+    disadvantaged_apprenticeships_number numeric,
+    disadvantaged_apprenticeships_percentage numeric,
+    disadvantaged_further_education_number numeric,
+    disadvantaged_further_education_percentage numeric,
+    disadvantaged_school_sixth_form_number numeric,
+    disadvantaged_school_sixth_form_percentage numeric,
+    disadvantaged_sixth_form_college_number numeric,
+    disadvantaged_sixth_form_college_percentage numeric,
+    disadvantaged_other_education_number numeric,
+    disadvantaged_other_education_percentage numeric,
+    disadvantaged_not_sustained_number numeric,
+    disadvantaged_not_sustained_percentage numeric,
+    disadvantaged_unknown_number numeric,
+    disadvantaged_unknown_percentage numeric,
+    -- Non-disadvantaged
+    non_disadvantaged_cohort numeric,
+    non_disadvantaged_sustained_number numeric,
+    non_disadvantaged_sustained_percentage numeric,
+    non_disadvantaged_education_number numeric,
+    non_disadvantaged_education_percentage numeric,
+    non_disadvantaged_employment_number numeric,
+    non_disadvantaged_employment_percentage numeric,
+    non_disadvantaged_apprenticeships_number numeric,
+    non_disadvantaged_apprenticeships_percentage numeric,
+    non_disadvantaged_further_education_number numeric,
+    non_disadvantaged_further_education_percentage numeric,
+    non_disadvantaged_school_sixth_form_number numeric,
+    non_disadvantaged_school_sixth_form_percentage numeric,
+    non_disadvantaged_sixth_form_college_number numeric,
+    non_disadvantaged_sixth_form_college_percentage numeric,
+    non_disadvantaged_other_education_number numeric,
+    non_disadvantaged_other_education_percentage numeric,
+    non_disadvantaged_not_sustained_number numeric,
+    non_disadvantaged_not_sustained_percentage numeric,
+    non_disadvantaged_unknown_number numeric,
+    non_disadvantaged_unknown_percentage numeric,
+    last_updated timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW(),
+    CONSTRAINT ks4_destinations_details_year_check CHECK (year ~ '^\d{4}$')
+);
+
+
+
 ------------------------------------------
 -- Census and Inspection Tables
 ------------------------------------------
@@ -194,54 +286,38 @@ CREATE TABLE school_inspections (
 -- Geographic/Spatial Tables
 ------------------------------------------
 
-CREATE TABLE bounding_boxes (
+CREATE TABLE public.bounding_boxes (
     id text PRIMARY KEY,
     ne_lat numeric NOT NULL,
     ne_lng numeric NOT NULL,
-    ne_geohash text,
+    ne_geohash text NOT NULL,
     sw_lat numeric NOT NULL,
     sw_lng numeric NOT NULL,
-    sw_geohash text,
+    sw_geohash text NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW(),
-    updated_at timestamptz NOT NULL DEFAULT NOW(),
-    
-    CONSTRAINT bounding_boxes_coordinates_check 
-        CHECK (
-            ne_lat > sw_lat AND
-            ne_lat BETWEEN 49 AND 61 AND
-            sw_lat BETWEEN 49 AND 61 AND
-            ne_lng BETWEEN -8 AND 2 AND
-            sw_lng BETWEEN -8 AND 2
-        )
+    updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE quadrants (
+CREATE TABLE public.quadrants (
     id text PRIMARY KEY,
     bounds_id text NOT NULL REFERENCES bounding_boxes(id),
     school_count integer NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW(),
-    updated_at timestamptz NOT NULL DEFAULT NOW(),
-    
-    CONSTRAINT quadrants_school_count_check 
-        CHECK (school_count >= 0)
+    updated_at timestamptz NOT NULL DEFAULT NOW()
 );
 
-CREATE TABLE quadrant_schools (
+
+CREATE TABLE public.quadrant_schools (
+    id text PRIMARY KEY DEFAULT gen_random_uuid(),
     quadrant_id text NOT NULL REFERENCES quadrants(id),
     urn text NOT NULL REFERENCES establishments(urn),
     name text NOT NULL,
     lat numeric NOT NULL,
     lng numeric NOT NULL,
-    geohash text,
+    geohash text NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW(),
-    PRIMARY KEY (quadrant_id, urn),
-    
-    CONSTRAINT quadrant_schools_coordinates_check 
-        CHECK (
-            lat BETWEEN 49 AND 61 AND
-            lng BETWEEN -8 AND 2
-        )
+    UNIQUE(quadrant_id, urn)
 );
 
 ------------------------------------------
@@ -263,7 +339,7 @@ CREATE TABLE ks4_results_main (
     ebacc_aps numeric,
     -- Student numbers
     total_pupils integer,
-    disadvantaged_pupils integer,
+    disadvantaged_pupils numeric,
     -- Disadvantaged gaps
     attainment8_score_disadvantaged numeric,
     progress8_score_disadvantaged numeric,
@@ -292,31 +368,132 @@ CREATE TABLE ks4_results_main (
     )
 );
 
-CREATE TABLE ks4_destinations (
+-- KS4 Demographics Results
+-- For demographics table, update to match TypeScript type
+CREATE TABLE public.ks4_results_demographics (
     id text PRIMARY KEY,
     urn text NOT NULL REFERENCES establishments(urn),
     year text NOT NULL,
-    sustained numeric,
-    education numeric,
-    employment numeric,
-    apprenticeships numeric,
-    further_education numeric,
-    sixth_form numeric,
-    sixth_form_college numeric,
-    disadvantaged_sustained numeric,
-    non_disadvantaged_sustained numeric,
-    cohort_size integer,
+    pupils_total numeric,
+    pupils_exam_cohort numeric,
+    pupils_boys numeric,
+    pupils_girls numeric,
+    characteristics_eal numeric,
+    characteristics_sen numeric,
+    characteristics_disadvantaged numeric,
     last_updated timestamptz NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW(),
-    
-    CONSTRAINT ks4_destinations_year_check CHECK (year ~ '^\d{4}$'),
-    CONSTRAINT ks4_destinations_percentage_check CHECK (
-        (sustained IS NULL OR (sustained >= 0 AND sustained <= 100)) AND
-        (education IS NULL OR (education >= 0 AND education <= 100)) AND
-        (employment IS NULL OR (employment >= 0 AND employment <= 100))
-    )
+
+    CONSTRAINT ks4_results_demographics_year_check CHECK (year ~ '^\d{4}$')
 );
+
+-- Update details table to match TypeScript type
+CREATE TABLE ks4_results_details (
+    id text PRIMARY KEY,
+    urn text NOT NULL REFERENCES establishments(urn),
+    year text NOT NULL,
+    -- Attainment 8
+    attainment8_english numeric,
+    attainment8_maths numeric,
+    attainment8_ebacc numeric,
+    attainment8_open numeric,
+    -- Attainment 8 by prior attainment - Low
+    attainment8_low_prior_overall numeric,
+    attainment8_low_prior_english numeric,
+    attainment8_low_prior_maths numeric,
+    attainment8_low_prior_ebacc numeric,
+    attainment8_low_prior_open numeric,
+    -- Attainment 8 by prior attainment - Middle
+    attainment8_middle_prior_overall numeric,
+    attainment8_middle_prior_english numeric,
+    attainment8_middle_prior_maths numeric,
+    attainment8_middle_prior_ebacc numeric,
+    attainment8_middle_prior_open numeric,
+    -- Attainment 8 by prior attainment - High
+    attainment8_high_prior_overall numeric,
+    attainment8_high_prior_english numeric,
+    attainment8_high_prior_maths numeric,
+    attainment8_high_prior_ebacc numeric,
+    attainment8_high_prior_open numeric,
+    -- Progress 8 by subject
+    progress8_english_score numeric,
+    progress8_english_lower numeric,
+    progress8_english_upper numeric,
+    progress8_maths_score numeric,
+    progress8_maths_lower numeric,
+    progress8_maths_upper numeric,
+    progress8_ebacc_score numeric,
+    progress8_ebacc_lower numeric,
+    progress8_ebacc_upper numeric,
+    progress8_open_score numeric,
+    progress8_open_lower numeric,
+    progress8_open_upper numeric,
+    -- EBacc subjects
+    ebacc_english_entry numeric,
+    ebacc_english_achieved94 numeric,
+    ebacc_english_achieved95 numeric,
+    ebacc_maths_entry numeric,
+    ebacc_maths_achieved94 numeric,
+    ebacc_maths_achieved95 numeric,
+    ebacc_science_entry numeric,
+    ebacc_science_achieved94 numeric,
+    ebacc_science_achieved95 numeric,
+    ebacc_humanities_entry numeric,
+    ebacc_humanities_achieved94 numeric,
+    ebacc_humanities_achieved95 numeric,
+    ebacc_languages_entry numeric,
+    ebacc_languages_achieved94 numeric,
+    ebacc_languages_achieved95 numeric,
+    -- Groups - Disadvantaged
+    groups_disadvantaged_attainment8 numeric,
+    groups_disadvantaged_progress8_score numeric,
+    groups_disadvantaged_progress8_lower numeric,
+    groups_disadvantaged_progress8_upper numeric,
+    -- Groups - Not Disadvantaged
+    groups_not_disadvantaged_attainment8 numeric,
+    groups_not_disadvantaged_progress8_score numeric,
+    groups_not_disadvantaged_progress8_lower numeric,
+    groups_not_disadvantaged_progress8_upper numeric,
+    -- Groups - EAL
+    groups_eal_attainment8 numeric,
+    groups_eal_progress8_score numeric,
+    groups_eal_progress8_lower numeric,
+    groups_eal_progress8_upper numeric,
+    -- Groups - Gender Boys
+    groups_boys_attainment8 numeric,
+    groups_boys_progress8_score numeric,
+    groups_boys_progress8_lower numeric,
+    groups_boys_progress8_upper numeric,
+    -- Groups - Gender Girls
+    groups_girls_attainment8 numeric,
+    groups_girls_progress8_score numeric,
+    groups_girls_progress8_lower numeric,
+    groups_girls_progress8_upper numeric,
+    -- Progress 8 Original
+    progress8_original_score numeric,
+    progress8_original_lower numeric,
+    progress8_original_upper numeric,
+    -- Attainment 8 Open
+    attainment8_open_gcse numeric,
+    attainment8_open_non_gcse numeric,
+    
+    last_updated timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW(),
+
+    CONSTRAINT ks4_results_details_year_check CHECK (year ~ '^\d{4}$')
+);
+
+CREATE TABLE education_phases (
+    id text PRIMARY KEY,
+    name text NOT NULL,
+    statutory_age_low integer NOT NULL,
+    statutory_age_high integer NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW()
+);
+
 
 ------------------------------------------
 -- KS5 Results and Destinations Tables
@@ -707,16 +884,14 @@ CREATE INDEX school_inspections_date_idx ON school_inspections(date);
 -- Quadrants
 CREATE INDEX quadrant_schools_urn_idx ON quadrant_schools(urn);
 CREATE INDEX quadrant_schools_geohash_idx ON quadrant_schools(geohash);
+CREATE INDEX quadrant_schools_quadrant_idx ON quadrant_schools(quadrant_id);
+
 
 -- KS4 Results
 CREATE INDEX ks4_results_main_urn_year_idx ON ks4_results_main(urn, year);
 CREATE INDEX ks4_results_main_year_idx ON ks4_results_main(year);
 CREATE INDEX ks4_results_main_last_updated_idx ON ks4_results_main(last_updated);
 
--- KS4 Destinations
-CREATE INDEX ks4_destinations_urn_year_idx ON ks4_destinations(urn, year);
-CREATE INDEX ks4_destinations_year_idx ON ks4_destinations(year);
-CREATE INDEX ks4_destinations_last_updated_idx ON ks4_destinations(last_updated);
 
 -- KS5 Destinations
 CREATE INDEX ks5_destinations_urn_year_idx ON ks5_destinations(urn, year);
@@ -748,3 +923,18 @@ CREATE TRIGGER update_school_quadrant_schools_updated_at
     FOR EACH ROW
     EXECUTE PROCEDURE update_updated_at_column();
     
+-- Indexes
+CREATE INDEX idx_ks4_demographics_urn_year ON public.ks4_results_demographics(urn, year);
+CREATE INDEX idx_ks4_details_urn_year ON ks4_results_details(urn, year);
+
+-- Add index
+CREATE INDEX idx_ks4_details_urn_year ON ks4_results_details(urn, year);
+
+CREATE INDEX IF NOT EXISTS idx_education_phases_establishment 
+ON education_phases(establishment_id);
+
+CREATE INDEX IF NOT EXISTS idx_education_phases_phase 
+ON education_phases(phase_id);
+
+CREATE INDEX idx_ks4_destinations_main_urn_year ON ks4_destinations_main(urn, year);
+CREATE INDEX idx_ks4_destinations_details_urn_year ON ks4_destinations_details(urn, year);

@@ -9,7 +9,8 @@
     "clear": "nx reset",
     "start:app": "nx dev uk-schools-finder",
     "start:admin": "nx run firebase-admin:serve",
-    "build": "nx build uk-schools-finder"
+    "build": "nx build uk-schools-finder",
+    "gen:supabase-types": "npx supabase gen types typescript --project-id dwttkgrgeyvlzecsbzzg --schema public > packages/supabase/import/src/lib/database.types.ts"
   },
   "private": true,
   "dependencies": {

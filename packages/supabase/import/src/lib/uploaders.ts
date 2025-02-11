@@ -1,24 +1,14 @@
 import { uploadBatch } from './generic-uploader';
 import {
-  KS4ResultsBatch,
   KS4DestinationsBatch,
   KS5DestinationsBatch,
   KS5HEDestinationsBatch,
-  SchoolBatch,
-  QuadrantBatch,
 } from '@lonli-lokli/data-transformers';
 import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
 
-export const uploadKS4Results = (
-  batch: KS4ResultsBatch,
-  params: SupabaseImportParams
-): Promise<ImportResult> => uploadBatch('ks4-results', batch, params);
+export { uploadKS4Results } from './ks4-uploader';
 
-export const uploadKS4Destinations = (
-  batch: KS4DestinationsBatch,
-  params: SupabaseImportParams
-): Promise<ImportResult> => uploadBatch('ks4-destinations', batch, params);
-
+export { uploadKS4Destinations } from './ks4-destinations-uploader';
 export const uploadKS5Destinations = (
   batch: KS5DestinationsBatch,
   params: SupabaseImportParams

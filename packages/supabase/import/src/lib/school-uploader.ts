@@ -1,55 +1,20 @@
 import { SchoolBatch } from '@lonli-lokli/data-transformers';
 import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
 import type { Database } from './database.types';
-import { SupabaseClient } from '@supabase/supabase-js';
 
-import { identity } from './core';
+import { identity, importInBatches } from './core';
 
 type EstablishmentTypeInsert =
   Database['public']['Tables']['establishment_types']['Insert'];
 type PhaseTypeInsert = Database['public']['Tables']['phase_types']['Insert'];
+type EducationPhaseInsert =
+  Database['public']['Tables']['education_phases']['Insert'];
 type LocationInsert = Database['public']['Tables']['locations']['Insert'];
 type TrustInsert = Database['public']['Tables']['trusts']['Insert'];
 type CensusInsert = Database['public']['Tables']['school_census']['Insert'];
 type SchoolInspectionInsert =
   Database['public']['Tables']['school_inspections']['Insert'];
 type SchoolInsert = Database['public']['Tables']['establishments']['Insert'];
-
-function chunk<T>(array: T[], size: number): T[][] {
-  return Array.from({ length: Math.ceil(array.length / size) }, (_, i) =>
-    array.slice(i * size, (i + 1) * size)
-  );
-}
-
-async function importInBatches<T>(
-  items: T[],
-  rpcName: keyof Database['public']['Functions'],
-  paramName: string,
-  db: SupabaseClient<Database>,
-  onProgress: (imported: number) => void,
-  batchSize = 5000
-) {
-  console.log('Importing in batches:', {
-    rpcName,
-    paramName,
-    itemsLength: items.length,
-    batchSize,
-  });
-
-  if (items.length <= batchSize) {
-    const { error } = await db.rpc(rpcName, { [paramName]: items });
-    if (error) throw error;
-    onProgress(items.length);
-    return;
-  }
-
-  const batches = chunk(items, batchSize);
-  for (const batch of batches) {
-    const { error } = await db.rpc(rpcName, { [paramName]: batch });
-    if (error) throw error;
-    onProgress(batch.length);
-  }
-}
 
 export async function uploadSchools(
   batch: SchoolBatch,
@@ -195,6 +160,32 @@ export async function uploadSchools(
     });
 
     await importInBatches(
+      batch.phases.map<EducationPhaseInsert>((l) => ({
+        id: l.id,
+        name: l.data.name,
+        statutory_age_low: l.data.statutoryAges.low,
+        statutory_age_high: l.data.statutoryAges.high,
+      })),
+      'school_import_education_phases',
+      'phases',
+      db,
+      (count) => {
+        processedCount += count;
+        onProgress?.({
+          current: processedCount,
+          total: totalCount,
+          details: `Imported ${count} education phases...`,
+        });
+      }
+    );
+
+    onProgress?.({
+      current: processedCount,
+      total: totalCount,
+      details: `Imported ${batch.phases.length} education phases...`,
+    });
+
+    await importInBatches(
       batch.trusts.map((t) =>
         identity<TrustInsert>({
           id: t.id,
@@ -226,7 +217,7 @@ export async function uploadSchools(
 
     // 2. Import schools (main establishments)
     await importInBatches(
-      batch.main.map<SchoolInsert>(s => {
+      batch.main.map<SchoolInsert>((s) => {
         return identity<SchoolInsert>({
           id: s.id,
           urn: s.data.urn,
@@ -276,7 +267,7 @@ export async function uploadSchools(
         onProgress?.({
           current: processedCount,
           total: totalCount,
-          details: `Imported ${count} schools...`
+          details: `Imported ${count} schools...`,
         });
       }
     );
@@ -323,7 +314,6 @@ export async function uploadSchools(
           inspectorate_name: i.data.inspectorateName,
           report: i.data.report,
           next_visit: i.data.nextVisit,
-
         })
       ),
       'school_import_inspections',
@@ -354,9 +344,18 @@ export async function uploadSchools(
     const errorMessage =
       error instanceof Error
         ? error.message
-        : typeof error === 'object' && error !== null && 'message' in error
-        ? String(error.message)
-        : 'Unknown error occurred';
+        : typeof error === 'object' && error !== null
+        ? [
+            'message' in error ? error.message : null,
+            'details' in error && error.details
+              ? `Details: ${error.details}`
+              : null,
+            'hint' in error && error.hint ? `Hint: ${error.hint}` : null,
+            'code' in error && error.code ? `Code: ${error.code}` : null,
+          ]
+            .filter(Boolean)
+            .join('\n')
+        : 'Unknown error';
 
     return {
       success: false,

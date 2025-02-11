@@ -73,23 +73,6 @@ export interface KS4DestinationsDetailsDm {
   lastUpdated: string;
 }
 
-// History collection
-export interface KS4DestinationsHistoryDm {
-  urn: string;
-  year: string;
-  cohort: number | null;
-  sustained: number | null;
-  disadvantaged: {
-    cohort: number | null;
-    sustained: number | null;
-  };
-  nonDisadvantaged: {
-    cohort: number | null;
-    sustained: number | null;
-  };
-  lastUpdated: string;
-}
-
 export interface KS4ResultsMainDm {
   urn: string;
   year: string;

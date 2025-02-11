@@ -158,3 +158,28 @@ BEGIN
   RETURN jsonb_build_object('success', true);
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.school_import_education_phases(phases jsonb)
+RETURNS jsonb AS $$
+BEGIN
+  INSERT INTO education_phases (
+    id,
+    name,
+    statutory_age_low,
+    statutory_age_high
+  )
+  SELECT * FROM jsonb_to_recordset(phases) AS x(
+    id text,
+    name text,
+    statutory_age_low integer,
+    statutory_age_high integer
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    name = EXCLUDED.name,
+    statutory_age_low = EXCLUDED.statutory_age_low,
+    statutory_age_high = EXCLUDED.statutory_age_high,
+    updated_at = NOW();
+
+  RETURN jsonb_build_object('success', true);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
