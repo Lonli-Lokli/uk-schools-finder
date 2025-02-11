@@ -1,5 +1,5 @@
 import { z, ZodNumber, ZodOptional } from 'zod';
-import { mustBeNumber } from './helpers';
+import { mustBeNumber, normalizePostcode } from './helpers';
 
 // Helper for optional string fields with default empty string
 const numericString = <T extends ZodNumber | ZodOptional<ZodNumber>>(
@@ -33,7 +33,7 @@ export const SchoolRowSchema = z.object({
   Locality: optionalString(),
   Town: optionalString(),
   'County (name)': optionalString(),
-  Postcode: optionalString(),
+  Postcode: optionalString().transform(normalizePostcode),
 
   // Administrative fields
   'LA (code)': optionalNumber,

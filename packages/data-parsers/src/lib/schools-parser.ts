@@ -7,7 +7,8 @@ export async function schoolsParser(
 ): Promise<ParseResult<SchoolRow>> {
   const { valid, errors } = await parseAndValidateCSV<SchoolRow>(
     csvData,
-    SchoolRowSchema as any
+    SchoolRowSchema as any,
+    row => row['TypeOfEstablishment (name)'] !== 'British schools overseas'
   );
 
   if (errors.length > 0) {

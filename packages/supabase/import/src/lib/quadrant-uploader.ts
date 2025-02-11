@@ -1,12 +1,19 @@
 import { QuadrantBatch } from '@lonli-lokli/data-transformers';
 import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
+import { identity } from './core';
+import type { Database } from './database.types';
+
+type BoundingBoxInsert = Database['public']['Tables']['bounding_boxes']['Insert'];
+type QuadrantInsert = Database['public']['Tables']['quadrants']['Insert'];
+type QuadrantSchoolInsert = Database['public']['Tables']['quadrant_schools']['Insert'];
 
 export async function uploadQuadrants(
   batch: QuadrantBatch,
   { db, onProgress }: SupabaseImportParams
 ): Promise<ImportResult> {
   try {
-    const boundingBoxes = batch.main.map(item => ({
+
+    const boundingBoxes = batch.main.map(item => identity<BoundingBoxInsert>({
       id: item.id,
       ne_lat: item.data.bounds.ne.lat,
       ne_lng: item.data.bounds.ne.lng,
@@ -16,14 +23,14 @@ export async function uploadQuadrants(
       sw_geohash: item.data.bounds.sw.geohash
     }));
 
-    const quadrants = batch.main.map(item => ({
+    const quadrants = batch.main.map(item => identity<QuadrantInsert>({
       id: item.id,
       bounds_id: item.id,
       school_count: item.data.schools.length
     }));
 
     const quadrantSchools = batch.main.flatMap(item => 
-      item.data.schools.map(school => ({
+      item.data.schools.map(school => identity<QuadrantSchoolInsert>({
         quadrant_id: item.id,
         urn: school.urn,
         name: school.name,

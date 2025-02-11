@@ -151,7 +151,7 @@ CREATE TABLE establishments (
     updated_at timestamptz NOT NULL DEFAULT NOW(),
 
     CONSTRAINT establishments_urn_format_check 
-        CHECK (urn ~ '^\d{6}$'),
+        CHECK (urn ~ '^\d{1,6}$'),
     CONSTRAINT establishments_gender_check 
         CHECK (gender IN ('mixed', 'boys', 'girls', NULL)),
     CONSTRAINT establishments_timestamps_check 

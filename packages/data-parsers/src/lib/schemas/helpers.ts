@@ -71,4 +71,9 @@ function intParser(val: string) {
     const num = parseInt(val);
     return isNaN(num) ? null : num;
   }
+
+export const normalizePostcode = (postcode: string | null | undefined): string | null => {
+  if (!postcode) return null;
+  return postcode.toUpperCase().replace(/\s+/g, ' ').trim();
+};
   

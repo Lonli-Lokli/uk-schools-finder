@@ -4,13 +4,17 @@ import {
   ImportResult,
   RegionDm,
 } from '@lonli-lokli/shapes';
+import { identity } from './core';
+import type { Database } from './database.types';
+
+type RegionInsert = Database['public']['Tables']['regions']['Insert'];
 
 export async function uploadRegions(
   batch: RegionBatch,
   { db, onProgress }: SupabaseImportParams
 ): Promise<ImportResult> {
   try {
-    const records = batch.main.map(item => ({
+    const records = batch.main.map(item => identity<RegionInsert>({
       id: item.id,
       name: item.data.name,
       sub_regions: item.data.subRegions,

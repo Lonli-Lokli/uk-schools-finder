@@ -6,19 +6,15 @@ BEGIN
   SELECT 
     x.id,
     x.name,
-    x."group",           -- quoted because it's a reserved word
-    x.furtherEducationType
+    x.group_name,           -- matches Insert type exactly
+    x.further_education_type
   FROM jsonb_to_recordset(types) AS x(
     id text, 
     name text,
-    "group" text,        -- quoted because it's a reserved word
-    furtherEducationType text
+    group_name text,        -- matches Insert type exactly
+    further_education_type text
   )
-  WHERE x.id IS NOT NULL
-  ON CONFLICT (id) DO UPDATE SET 
-    name = EXCLUDED.name,
-    group_name = EXCLUDED.group_name,  -- match the column name from INSERT
-    further_education_type = EXCLUDED.further_education_type;  -- match the column name from INSERT
+  WHERE x.id IS NOT NULL;
   
   RETURN jsonb_build_object('success', true);
 END;
@@ -99,24 +95,19 @@ CREATE OR REPLACE FUNCTION public.school_import_inspections(inspections jsonb)
 RETURNS jsonb AS $$
 BEGIN
   INSERT INTO school_inspections (
-    id, school_urn, date, overall_effectiveness, quality_of_education,
-    behaviour_and_attitudes, personal_development, leadership_and_management,
-    safeguarding_is_effective
+    id, school_urn, date, bso_inspectorate, inspectorate_name, 
+    report, next_visit
   )
   SELECT * FROM jsonb_to_recordset(inspections) AS x(
-    id text, school_urn text, date text, overall_effectiveness text,
-    quality_of_education text, behaviour_and_attitudes text,
-    personal_development text, leadership_and_management text,
-    safeguarding_is_effective boolean
+    id text, school_urn text, date text, bso_inspectorate text,
+    inspectorate_name text, report text, next_visit text
   )
   ON CONFLICT (id) DO UPDATE SET
     date = EXCLUDED.date,
-    overall_effectiveness = EXCLUDED.overall_effectiveness,
-    quality_of_education = EXCLUDED.quality_of_education,
-    behaviour_and_attitudes = EXCLUDED.behaviour_and_attitudes,
-    personal_development = EXCLUDED.personal_development,
-    leadership_and_management = EXCLUDED.leadership_and_management,
-    safeguarding_is_effective = EXCLUDED.safeguarding_is_effective;
+    bso_inspectorate = EXCLUDED.bso_inspectorate,
+    inspectorate_name = EXCLUDED.inspectorate_name,
+    report = EXCLUDED.report,
+    next_visit = EXCLUDED.next_visit;
     
   RETURN jsonb_build_object('success', true);
 END;
@@ -138,7 +129,7 @@ BEGIN
     boarders text, nursery_provision text, official_sixth_form text,
     capacity integer, head_title text, head_first_name text,
     head_last_name text, telephone text, website text,
-    sen_no_stat integer, props_name text, country text,
+    sen_no_stat text, props_name text, country text,
     site_name text, qab_name text
   )
   ON CONFLICT (id) DO UPDATE SET
