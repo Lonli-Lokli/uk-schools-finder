@@ -332,6 +332,7 @@ export interface KS5DestinationsStatsDm {
     higherEducation: number | null;
     furtherEducation: number | null;
     employment: number | null;
+    lastUpdated: string;
   }>;
 }
 

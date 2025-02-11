@@ -1,7 +1,7 @@
 import { QuadrantBatch } from '@lonli-lokli/data-transformers';
 import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
 import { identity, importInBatches } from './core';
-import type { Database } from './database.types';
+import { Database } from '@lonli-lokli/supabase/setup-client';
 
 type BoundingBoxInsert =
   Database['public']['Tables']['bounding_boxes']['Insert'];

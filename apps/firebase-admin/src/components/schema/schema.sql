@@ -498,263 +498,51 @@ CREATE TABLE education_phases (
 ------------------------------------------
 -- KS5 Results and Destinations Tables
 ------------------------------------------
+-- Create destinations category table
+CREATE TYPE destination_category AS ENUM (
+    'total',
+    'level3',
+    'level2',
+    'other_levels'
+);
 
+-- Create student group type
+CREATE TYPE student_group AS ENUM (
+    'all',
+    'disadvantaged',
+    'non_disadvantaged'
+);
+
+-- Create main destinations table with normalized structure
 CREATE TABLE ks5_destinations (
     id text PRIMARY KEY,
     urn text NOT NULL REFERENCES establishments(urn),
     year text NOT NULL,
+    category destination_category NOT NULL,
+    student_group student_group NOT NULL,
     
-    -- Total - All Students
-    total_all_cohort_size integer,
-    total_all_destinations_overall numeric,
-    total_all_destinations_education_total numeric,
-    total_all_destinations_education_further numeric,
-    total_all_destinations_education_higher numeric,
-    total_all_destinations_education_other numeric,
-    total_all_destinations_employment_total numeric,
-    total_all_destinations_employment_apprenticeships numeric,
-    total_all_destinations_other_not_sustained numeric,
-    total_all_destinations_other_not_captured numeric,
-    total_all_percentages_overall numeric,
-    total_all_percentages_education_total numeric,
-    total_all_percentages_education_further numeric,
-    total_all_percentages_education_higher numeric,
-    total_all_percentages_education_other numeric,
-    total_all_percentages_employment_total numeric,
-    total_all_percentages_employment_apprenticeships numeric,
-    total_all_percentages_other_not_sustained numeric,
-    total_all_percentages_other_not_captured numeric,
-
-    -- Total - Disadvantaged
-    total_disadvantaged_cohort_size integer,
-    total_disadvantaged_destinations_overall numeric,
-    total_disadvantaged_destinations_education_total numeric,
-    total_disadvantaged_destinations_education_further numeric,
-    total_disadvantaged_destinations_education_higher numeric,
-    total_disadvantaged_destinations_education_other numeric,
-    total_disadvantaged_destinations_employment_total numeric,
-    total_disadvantaged_destinations_employment_apprenticeships numeric,
-    total_disadvantaged_destinations_other_not_sustained numeric,
-    total_disadvantaged_destinations_other_not_captured numeric,
-    total_disadvantaged_percentages_overall numeric,
-    total_disadvantaged_percentages_education_total numeric,
-    total_disadvantaged_percentages_education_further numeric,
-    total_disadvantaged_percentages_education_higher numeric,
-    total_disadvantaged_percentages_education_other numeric,
-    total_disadvantaged_percentages_employment_total numeric,
-    total_disadvantaged_percentages_employment_apprenticeships numeric,
-    total_disadvantaged_percentages_other_not_sustained numeric,
-    total_disadvantaged_percentages_other_not_captured numeric,
-
-    -- Total - Non-Disadvantaged
-    total_non_disadvantaged_cohort_size integer,
-    total_non_disadvantaged_destinations_overall numeric,
-    total_non_disadvantaged_destinations_education_total numeric,
-    total_non_disadvantaged_destinations_education_further numeric,
-    total_non_disadvantaged_destinations_education_higher numeric,
-    total_non_disadvantaged_destinations_education_other numeric,
-    total_non_disadvantaged_destinations_employment_total numeric,
-    total_non_disadvantaged_destinations_employment_apprenticeships numeric,
-    total_non_disadvantaged_destinations_other_not_sustained numeric,
-    total_non_disadvantaged_destinations_other_not_captured numeric,
-    total_non_disadvantaged_percentages_overall numeric,
-    total_non_disadvantaged_percentages_education_total numeric,
-    total_non_disadvantaged_percentages_education_further numeric,
-    total_non_disadvantaged_percentages_education_higher numeric,
-    total_non_disadvantaged_percentages_education_other numeric,
-    total_non_disadvantaged_percentages_employment_total numeric,
-    total_non_disadvantaged_percentages_employment_apprenticeships numeric,
-    total_non_disadvantaged_percentages_other_not_sustained numeric,
-    total_non_disadvantaged_percentages_other_not_captured numeric,
-
-    -- Level 3 - All Students
-    level3_all_cohort_size integer,
-    level3_all_destinations_overall numeric,
-    level3_all_destinations_education_total numeric,
-    level3_all_destinations_education_further numeric,
-    level3_all_destinations_education_higher numeric,
-    level3_all_destinations_education_other numeric,
-    level3_all_destinations_employment_total numeric,
-    level3_all_destinations_employment_apprenticeships numeric,
-    level3_all_destinations_other_not_sustained numeric,
-    level3_all_destinations_other_not_captured numeric,
-    level3_all_percentages_overall numeric,
-    level3_all_percentages_education_total numeric,
-    level3_all_percentages_education_further numeric,
-    level3_all_percentages_education_higher numeric,
-    level3_all_percentages_education_other numeric,
-    level3_all_percentages_employment_total numeric,
-    level3_all_percentages_employment_apprenticeships numeric,
-    level3_all_percentages_other_not_sustained numeric,
-    level3_all_percentages_other_not_captured numeric,
-
-    -- Level 3 - Disadvantaged
-    level3_disadvantaged_cohort_size integer,
-    level3_disadvantaged_destinations_overall numeric,
-    level3_disadvantaged_destinations_education_total numeric,
-    level3_disadvantaged_destinations_education_further numeric,
-    level3_disadvantaged_destinations_education_higher numeric,
-    level3_disadvantaged_destinations_education_other numeric,
-    level3_disadvantaged_destinations_employment_total numeric,
-    level3_disadvantaged_destinations_employment_apprenticeships numeric,
-    level3_disadvantaged_destinations_other_not_sustained numeric,
-    level3_disadvantaged_destinations_other_not_captured numeric,
-    level3_disadvantaged_percentages_overall numeric,
-    level3_disadvantaged_percentages_education_total numeric,
-    level3_disadvantaged_percentages_education_further numeric,
-    level3_disadvantaged_percentages_education_higher numeric,
-    level3_disadvantaged_percentages_education_other numeric,
-    level3_disadvantaged_percentages_employment_total numeric,
-    level3_disadvantaged_percentages_employment_apprenticeships numeric,
-    level3_disadvantaged_percentages_other_not_sustained numeric,
-    level3_disadvantaged_percentages_other_not_captured numeric,
-
-    -- Level 3 - Non-Disadvantaged
-    level3_non_disadvantaged_cohort_size integer,
-    level3_non_disadvantaged_destinations_overall numeric,
-    level3_non_disadvantaged_destinations_education_total numeric,
-    level3_non_disadvantaged_destinations_education_further numeric,
-    level3_non_disadvantaged_destinations_education_higher numeric,
-    level3_non_disadvantaged_destinations_education_other numeric,
-    level3_non_disadvantaged_destinations_employment_total numeric,
-    level3_non_disadvantaged_destinations_employment_apprenticeships numeric,
-    level3_non_disadvantaged_destinations_other_not_sustained numeric,
-    level3_non_disadvantaged_destinations_other_not_captured numeric,
-    level3_non_disadvantaged_percentages_overall numeric,
-    level3_non_disadvantaged_percentages_education_total numeric,
-    level3_non_disadvantaged_percentages_education_further numeric,
-    level3_non_disadvantaged_percentages_education_higher numeric,
-    level3_non_disadvantaged_percentages_education_other numeric,
-    level3_non_disadvantaged_percentages_employment_total numeric,
-    level3_non_disadvantaged_percentages_employment_apprenticeships numeric,
-    level3_non_disadvantaged_percentages_other_not_sustained numeric,
-    level3_non_disadvantaged_percentages_other_not_captured numeric,
-
-    -- Level 2 - All Students (same structure as Level 3)
-    level2_all_cohort_size integer,
-    level2_all_destinations_overall numeric,
-    level2_all_destinations_education_total numeric,
-    level2_all_destinations_education_further numeric,
-    level2_all_destinations_education_higher numeric,
-    level2_all_destinations_education_other numeric,
-    level2_all_destinations_employment_total numeric,
-    level2_all_destinations_employment_apprenticeships numeric,
-    level2_all_destinations_other_not_sustained numeric,
-    level2_all_destinations_other_not_captured numeric,
-    level2_all_percentages_overall numeric,
-    level2_all_percentages_education_total numeric,
-    level2_all_percentages_education_further numeric,
-    level2_all_percentages_education_higher numeric,
-    level2_all_percentages_education_other numeric,
-    level2_all_percentages_employment_total numeric,
-    level2_all_percentages_employment_apprenticeships numeric,
-    level2_all_percentages_other_not_sustained numeric,
-    level2_all_percentages_other_not_captured numeric,
-
-    -- Level 2 - Disadvantaged
-    level2_disadvantaged_cohort_size integer,
-    level2_disadvantaged_destinations_overall numeric,
-    level2_disadvantaged_destinations_education_total numeric,
-    level2_disadvantaged_destinations_education_further numeric,
-    level2_disadvantaged_destinations_education_higher numeric,
-    level2_disadvantaged_destinations_education_other numeric,
-    level2_disadvantaged_destinations_employment_total numeric,
-    level2_disadvantaged_destinations_employment_apprenticeships numeric,
-    level2_disadvantaged_destinations_other_not_sustained numeric,
-    level2_disadvantaged_destinations_other_not_captured numeric,
-    level2_disadvantaged_percentages_overall numeric,
-    level2_disadvantaged_percentages_education_total numeric,
-    level2_disadvantaged_percentages_education_further numeric,
-    level2_disadvantaged_percentages_education_higher numeric,
-    level2_disadvantaged_percentages_education_other numeric,
-    level2_disadvantaged_percentages_employment_total numeric,
-    level2_disadvantaged_percentages_employment_apprenticeships numeric,
-    level2_disadvantaged_percentages_other_not_sustained numeric,
-    level2_disadvantaged_percentages_other_not_captured numeric,
-
-    -- Level 2 - Non-Disadvantaged
-    level2_non_disadvantaged_cohort_size integer,
-    level2_non_disadvantaged_destinations_overall numeric,
-    level2_non_disadvantaged_destinations_education_total numeric,
-    level2_non_disadvantaged_destinations_education_further numeric,
-    level2_non_disadvantaged_destinations_education_higher numeric,
-    level2_non_disadvantaged_destinations_education_other numeric,
-    level2_non_disadvantaged_destinations_employment_total numeric,
-    level2_non_disadvantaged_destinations_employment_apprenticeships numeric,
-    level2_non_disadvantaged_destinations_other_not_sustained numeric,
-    level2_non_disadvantaged_destinations_other_not_captured numeric,
-    level2_non_disadvantaged_percentages_overall numeric,
-    level2_non_disadvantaged_percentages_education_total numeric,
-    level2_non_disadvantaged_percentages_education_further numeric,
-    level2_non_disadvantaged_percentages_education_higher numeric,
-    level2_non_disadvantaged_percentages_education_other numeric,
-    level2_non_disadvantaged_percentages_employment_total numeric,
-    level2_non_disadvantaged_percentages_employment_apprenticeships numeric,
-    level2_non_disadvantaged_percentages_other_not_sustained numeric,
-    level2_non_disadvantaged_percentages_other_not_captured numeric,
-
-    -- Other Levels - All Students (same structure as Level 3)
-    other_levels_all_cohort_size integer,
-    other_levels_all_destinations_overall numeric,
-    other_levels_all_destinations_education_total numeric,
-    other_levels_all_destinations_education_further numeric,
-    other_levels_all_destinations_education_higher numeric,
-    other_levels_all_destinations_education_other numeric,
-    other_levels_all_destinations_employment_total numeric,
-    other_levels_all_destinations_employment_apprenticeships numeric,
-    other_levels_all_destinations_other_not_sustained numeric,
-    other_levels_all_destinations_other_not_captured numeric,
-    other_levels_all_percentages_overall numeric,
-    other_levels_all_percentages_education_total numeric,
-    other_levels_all_percentages_education_further numeric,
-    other_levels_all_percentages_education_higher numeric,
-    other_levels_all_percentages_education_other numeric,
-    other_levels_all_percentages_employment_total numeric,
-    other_levels_all_percentages_employment_apprenticeships numeric,
-    other_levels_all_percentages_other_not_sustained numeric,
-    other_levels_all_percentages_other_not_captured numeric,
-
-    -- Other Levels - Disadvantaged
-    other_levels_disadvantaged_cohort_size integer,
-    other_levels_disadvantaged_destinations_overall numeric,
-    other_levels_disadvantaged_destinations_education_total numeric,
-    other_levels_disadvantaged_destinations_education_further numeric,
-    other_levels_disadvantaged_destinations_education_higher numeric,
-    other_levels_disadvantaged_destinations_education_other numeric,
-    other_levels_disadvantaged_destinations_employment_total numeric,
-    other_levels_disadvantaged_destinations_employment_apprenticeships numeric,
-    other_levels_disadvantaged_destinations_other_not_sustained numeric,
-    other_levels_disadvantaged_destinations_other_not_captured numeric,
-    other_levels_disadvantaged_percentages_overall numeric,
-    other_levels_disadvantaged_percentages_education_total numeric,
-    other_levels_disadvantaged_percentages_education_further numeric,
-    other_levels_disadvantaged_percentages_education_higher numeric,
-    other_levels_disadvantaged_percentages_education_other numeric,
-    other_levels_disadvantaged_percentages_employment_total numeric,
-    other_levels_disadvantaged_percentages_employment_apprenticeships numeric,
-    other_levels_disadvantaged_percentages_other_not_sustained numeric,
-    other_levels_disadvantaged_percentages_other_not_captured numeric,
-
-    -- Other Levels - Non-Disadvantaged
-    other_levels_non_disadvantaged_cohort_size integer,
-    other_levels_non_disadvantaged_destinations_overall numeric,
-    other_levels_non_disadvantaged_destinations_education_total numeric,
-    other_levels_non_disadvantaged_destinations_education_further numeric,
-    other_levels_non_disadvantaged_destinations_education_higher numeric,
-    other_levels_non_disadvantaged_destinations_education_other numeric,
-    other_levels_non_disadvantaged_destinations_employment_total numeric,
-    other_levels_non_disadvantaged_destinations_employment_apprenticeships numeric,
-    other_levels_non_disadvantaged_destinations_other_not_sustained numeric,
-    other_levels_non_disadvantaged_destinations_other_not_captured numeric,
-    other_levels_non_disadvantaged_percentages_overall numeric,
-    other_levels_non_disadvantaged_percentages_education_total numeric,
-    other_levels_non_disadvantaged_percentages_education_further numeric,
-    other_levels_non_disadvantaged_percentages_education_higher numeric,
-    other_levels_non_disadvantaged_percentages_education_other numeric,
-    other_levels_non_disadvantaged_percentages_employment_total numeric,
-    other_levels_non_disadvantaged_percentages_employment_apprenticeships numeric,
-    other_levels_non_disadvantaged_percentages_other_not_sustained numeric,
-    other_levels_non_disadvantaged_percentages_other_not_captured numeric,
+    -- Core metrics
+    cohort_size integer,
+    destinations_overall numeric,
+    destinations_education_total numeric,
+    destinations_education_further numeric,
+    destinations_education_higher numeric,
+    destinations_education_other numeric,
+    destinations_employment_total numeric,
+    destinations_employment_apprenticeships numeric,
+    destinations_other_not_sustained numeric,
+    destinations_other_not_captured numeric,
+    
+    -- Percentages
+    percentages_overall numeric,
+    percentages_education_total numeric,
+    percentages_education_further numeric,
+    percentages_education_higher numeric,
+    percentages_education_other numeric,
+    percentages_employment_total numeric,
+    percentages_employment_apprenticeships numeric,
+    percentages_other_not_sustained numeric,
+    percentages_other_not_captured numeric,
 
     last_updated timestamptz NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW(),
@@ -762,10 +550,25 @@ CREATE TABLE ks5_destinations (
     
     CONSTRAINT ks5_destinations_year_check CHECK (year ~ '^\d{4}$'),
     CONSTRAINT ks5_destinations_percentage_check CHECK (
-        (total_all_percentages_overall IS NULL OR 
-         (total_all_percentages_overall >= 0 AND total_all_percentages_overall <= 100))
-    )
+        (percentages_overall IS NULL OR 
+         (percentages_overall >= 0 AND percentages_overall <= 100))
+    ),
+    UNIQUE(urn, year, category, student_group)
 );
+
+-- Create stats table for historical data
+CREATE TABLE ks5_destinations_stats (
+    id text PRIMARY KEY,
+    year text NOT NULL,
+    higher_education numeric,
+    further_education numeric,
+    employment numeric,
+    last_updated timestamptz NOT NULL,
+    created_at timestamptz NOT NULL DEFAULT NOW(),
+    updated_at timestamptz NOT NULL DEFAULT NOW(),
+    CONSTRAINT ks5_destinations_stats_year_check CHECK (year ~ '^\d{4}$')
+);
+
 
 CREATE TABLE ks5_he_destinations (
     id text PRIMARY KEY,
@@ -893,11 +696,6 @@ CREATE INDEX ks4_results_main_year_idx ON ks4_results_main(year);
 CREATE INDEX ks4_results_main_last_updated_idx ON ks4_results_main(last_updated);
 
 
--- KS5 Destinations
-CREATE INDEX ks5_destinations_urn_year_idx ON ks5_destinations(urn, year);
-CREATE INDEX ks5_destinations_year_idx ON ks5_destinations(year);
-CREATE INDEX ks5_destinations_last_updated_idx ON ks5_destinations(last_updated);
-
 -- KS5 HE Destinations
 CREATE INDEX ks5_he_destinations_urn_year_idx ON ks5_he_destinations(school_urn, year);
 CREATE INDEX ks5_he_destinations_year_idx ON ks5_he_destinations(year);
@@ -938,3 +736,5 @@ ON education_phases(phase_id);
 
 CREATE INDEX idx_ks4_destinations_main_urn_year ON ks4_destinations_main(urn, year);
 CREATE INDEX idx_ks4_destinations_details_urn_year ON ks4_destinations_details(urn, year);
+
+CREATE INDEX idx_ks5_destinations_urn_year ON ks5_destinations(urn, year);

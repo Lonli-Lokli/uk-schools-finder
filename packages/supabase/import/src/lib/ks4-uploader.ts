@@ -1,6 +1,6 @@
 import { KS4ResultsBatch } from '@lonli-lokli/data-transformers';
 import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
-import type { Database } from './database.types';
+import { Database } from '@lonli-lokli/supabase/setup-client';
 import { identity, importInBatches } from './core';
 
 type KS4ResultMainInsert =

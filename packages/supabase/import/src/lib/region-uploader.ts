@@ -4,7 +4,7 @@ import {
   ImportResult,
 } from '@lonli-lokli/shapes';
 import { identity } from './core';
-import type { Database } from './database.types';
+import { Database } from '@lonli-lokli/supabase/setup-client';
 
 type RegionInsert = Database['public']['Tables']['regions']['Insert'];
 
@@ -46,7 +46,20 @@ export async function uploadRegions(
   } catch (error) {
     console.error('Import error:', error);
     const errorMessage =
-      error instanceof Error ? error.message : String(error);
+      error instanceof Error
+        ? error.message
+        : typeof error === 'object' && error !== null
+        ? [
+            'message' in error ? error.message : null,
+            'details' in error && error.details
+              ? `Details: ${error.details}`
+              : null,
+            'hint' in error && error.hint ? `Hint: ${error.hint}` : null,
+            'code' in error && error.code ? `Code: ${error.code}` : null,
+          ]
+            .filter(Boolean)
+            .join('\n')
+        : 'Unknown error';
     return {
       success: false,
       count: 0,

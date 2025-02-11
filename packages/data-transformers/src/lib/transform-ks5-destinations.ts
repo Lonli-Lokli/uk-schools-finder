@@ -110,6 +110,7 @@ export function transformKS5Destinations(rows: KS5DestinationsRow[], year?: stri
           higherEducation: cleanValue(row.TOT_HEPER),
           furtherEducation: cleanValue(row.TOT_FEPER),
           employment: cleanValue(row.TOT_EMPLOYMENTPER),
+          lastUpdated: new Date().toISOString(),
         }]
       }
     });

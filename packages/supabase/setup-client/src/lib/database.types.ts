@@ -547,36 +547,6 @@ export type Database = {
           },
         ]
       }
-      ks4_destinations_stats: {
-        Row: {
-          created_at: string
-          employment: number | null
-          further_education: number | null
-          higher_education: number | null
-          id: string
-          updated_at: string
-          year: string
-        }
-        Insert: {
-          created_at?: string
-          employment?: number | null
-          further_education?: number | null
-          higher_education?: number | null
-          id: string
-          updated_at?: string
-          year: string
-        }
-        Update: {
-          created_at?: string
-          employment?: number | null
-          further_education?: number | null
-          higher_education?: number | null
-          id?: string
-          updated_at?: string
-          year?: string
-        }
-        Relationships: []
-      }
       ks4_results_demographics: {
         Row: {
           characteristics_disadvantaged: number | null
@@ -981,1050 +951,132 @@ export type Database = {
       }
       ks5_destinations: {
         Row: {
+          category: Database["public"]["Enums"]["destination_category"]
+          cohort_size: number | null
           created_at: string
+          destinations_education_further: number | null
+          destinations_education_higher: number | null
+          destinations_education_other: number | null
+          destinations_education_total: number | null
+          destinations_employment_apprenticeships: number | null
+          destinations_employment_total: number | null
+          destinations_other_not_captured: number | null
+          destinations_other_not_sustained: number | null
+          destinations_overall: number | null
           id: string
           last_updated: string
-          level2_all_cohort_size: number | null
-          level2_all_destinations_education_further: number | null
-          level2_all_destinations_education_higher: number | null
-          level2_all_destinations_education_other: number | null
-          level2_all_destinations_education_total: number | null
-          level2_all_destinations_employment_apprenticeships: number | null
-          level2_all_destinations_employment_total: number | null
-          level2_all_destinations_other_not_captured: number | null
-          level2_all_destinations_other_not_sustained: number | null
-          level2_all_destinations_overall: number | null
-          level2_all_percentages_education_further: number | null
-          level2_all_percentages_education_higher: number | null
-          level2_all_percentages_education_other: number | null
-          level2_all_percentages_education_total: number | null
-          level2_all_percentages_employment_apprenticeships: number | null
-          level2_all_percentages_employment_total: number | null
-          level2_all_percentages_other_not_captured: number | null
-          level2_all_percentages_other_not_sustained: number | null
-          level2_all_percentages_overall: number | null
-          level2_disadvantaged_cohort_size: number | null
-          level2_disadvantaged_destinations_education_further: number | null
-          level2_disadvantaged_destinations_education_higher: number | null
-          level2_disadvantaged_destinations_education_other: number | null
-          level2_disadvantaged_destinations_education_total: number | null
-          level2_disadvantaged_destinations_employment_apprenticeships:
-            | number
-            | null
-          level2_disadvantaged_destinations_employment_total: number | null
-          level2_disadvantaged_destinations_other_not_captured: number | null
-          level2_disadvantaged_destinations_other_not_sustained: number | null
-          level2_disadvantaged_destinations_overall: number | null
-          level2_disadvantaged_percentages_education_further: number | null
-          level2_disadvantaged_percentages_education_higher: number | null
-          level2_disadvantaged_percentages_education_other: number | null
-          level2_disadvantaged_percentages_education_total: number | null
-          level2_disadvantaged_percentages_employment_apprenticeships:
-            | number
-            | null
-          level2_disadvantaged_percentages_employment_total: number | null
-          level2_disadvantaged_percentages_other_not_captured: number | null
-          level2_disadvantaged_percentages_other_not_sustained: number | null
-          level2_disadvantaged_percentages_overall: number | null
-          level2_non_disadvantaged_cohort_size: number | null
-          level2_non_disadvantaged_destinations_education_further: number | null
-          level2_non_disadvantaged_destinations_education_higher: number | null
-          level2_non_disadvantaged_destinations_education_other: number | null
-          level2_non_disadvantaged_destinations_education_total: number | null
-          level2_non_disadvantaged_destinations_employment_apprenticeship:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_employment_total: number | null
-          level2_non_disadvantaged_destinations_other_not_captured:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_other_not_sustained:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_overall: number | null
-          level2_non_disadvantaged_percentages_education_further: number | null
-          level2_non_disadvantaged_percentages_education_higher: number | null
-          level2_non_disadvantaged_percentages_education_other: number | null
-          level2_non_disadvantaged_percentages_education_total: number | null
-          level2_non_disadvantaged_percentages_employment_apprenticeships:
-            | number
-            | null
-          level2_non_disadvantaged_percentages_employment_total: number | null
-          level2_non_disadvantaged_percentages_other_not_captured: number | null
-          level2_non_disadvantaged_percentages_other_not_sustained:
-            | number
-            | null
-          level2_non_disadvantaged_percentages_overall: number | null
-          level3_all_cohort_size: number | null
-          level3_all_destinations_education_further: number | null
-          level3_all_destinations_education_higher: number | null
-          level3_all_destinations_education_other: number | null
-          level3_all_destinations_education_total: number | null
-          level3_all_destinations_employment_apprenticeships: number | null
-          level3_all_destinations_employment_total: number | null
-          level3_all_destinations_other_not_captured: number | null
-          level3_all_destinations_other_not_sustained: number | null
-          level3_all_destinations_overall: number | null
-          level3_all_percentages_education_further: number | null
-          level3_all_percentages_education_higher: number | null
-          level3_all_percentages_education_other: number | null
-          level3_all_percentages_education_total: number | null
-          level3_all_percentages_employment_apprenticeships: number | null
-          level3_all_percentages_employment_total: number | null
-          level3_all_percentages_other_not_captured: number | null
-          level3_all_percentages_other_not_sustained: number | null
-          level3_all_percentages_overall: number | null
-          level3_disadvantaged_cohort_size: number | null
-          level3_disadvantaged_destinations_education_further: number | null
-          level3_disadvantaged_destinations_education_higher: number | null
-          level3_disadvantaged_destinations_education_other: number | null
-          level3_disadvantaged_destinations_education_total: number | null
-          level3_disadvantaged_destinations_employment_apprenticeships:
-            | number
-            | null
-          level3_disadvantaged_destinations_employment_total: number | null
-          level3_disadvantaged_destinations_other_not_captured: number | null
-          level3_disadvantaged_destinations_other_not_sustained: number | null
-          level3_disadvantaged_destinations_overall: number | null
-          level3_disadvantaged_percentages_education_further: number | null
-          level3_disadvantaged_percentages_education_higher: number | null
-          level3_disadvantaged_percentages_education_other: number | null
-          level3_disadvantaged_percentages_education_total: number | null
-          level3_disadvantaged_percentages_employment_apprenticeships:
-            | number
-            | null
-          level3_disadvantaged_percentages_employment_total: number | null
-          level3_disadvantaged_percentages_other_not_captured: number | null
-          level3_disadvantaged_percentages_other_not_sustained: number | null
-          level3_disadvantaged_percentages_overall: number | null
-          level3_non_disadvantaged_cohort_size: number | null
-          level3_non_disadvantaged_destinations_education_further: number | null
-          level3_non_disadvantaged_destinations_education_higher: number | null
-          level3_non_disadvantaged_destinations_education_other: number | null
-          level3_non_disadvantaged_destinations_education_total: number | null
-          level3_non_disadvantaged_destinations_employment_apprenticeship:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_employment_total: number | null
-          level3_non_disadvantaged_destinations_other_not_captured:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_other_not_sustained:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_overall: number | null
-          level3_non_disadvantaged_percentages_education_further: number | null
-          level3_non_disadvantaged_percentages_education_higher: number | null
-          level3_non_disadvantaged_percentages_education_other: number | null
-          level3_non_disadvantaged_percentages_education_total: number | null
-          level3_non_disadvantaged_percentages_employment_apprenticeships:
-            | number
-            | null
-          level3_non_disadvantaged_percentages_employment_total: number | null
-          level3_non_disadvantaged_percentages_other_not_captured: number | null
-          level3_non_disadvantaged_percentages_other_not_sustained:
-            | number
-            | null
-          level3_non_disadvantaged_percentages_overall: number | null
-          other_levels_all_cohort_size: number | null
-          other_levels_all_destinations_education_further: number | null
-          other_levels_all_destinations_education_higher: number | null
-          other_levels_all_destinations_education_other: number | null
-          other_levels_all_destinations_education_total: number | null
-          other_levels_all_destinations_employment_apprenticeships:
-            | number
-            | null
-          other_levels_all_destinations_employment_total: number | null
-          other_levels_all_destinations_other_not_captured: number | null
-          other_levels_all_destinations_other_not_sustained: number | null
-          other_levels_all_destinations_overall: number | null
-          other_levels_all_percentages_education_further: number | null
-          other_levels_all_percentages_education_higher: number | null
-          other_levels_all_percentages_education_other: number | null
-          other_levels_all_percentages_education_total: number | null
-          other_levels_all_percentages_employment_apprenticeships: number | null
-          other_levels_all_percentages_employment_total: number | null
-          other_levels_all_percentages_other_not_captured: number | null
-          other_levels_all_percentages_other_not_sustained: number | null
-          other_levels_all_percentages_overall: number | null
-          other_levels_disadvantaged_cohort_size: number | null
-          other_levels_disadvantaged_destinations_education_further:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_education_higher:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_education_other: number | null
-          other_levels_disadvantaged_destinations_education_total: number | null
-          other_levels_disadvantaged_destinations_employment_apprenticesh:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_employment_total:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_other_not_captured:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_other_not_sustained:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_overall: number | null
-          other_levels_disadvantaged_percentages_education_further:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_education_higher: number | null
-          other_levels_disadvantaged_percentages_education_other: number | null
-          other_levels_disadvantaged_percentages_education_total: number | null
-          other_levels_disadvantaged_percentages_employment_apprenticeshi:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_employment_total: number | null
-          other_levels_disadvantaged_percentages_other_not_captured:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_other_not_sustained:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_overall: number | null
-          other_levels_non_disadvantaged_cohort_size: number | null
-          other_levels_non_disadvantaged_destinations_education_further:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_higher:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_other:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_total:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_employment_apprenti:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_employment_total:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_other_not_captured:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_other_not_sustained:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_overall: number | null
-          other_levels_non_disadvantaged_percentages_education_further:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_higher:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_other:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_total:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_employment_apprentic:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_employment_total:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_other_not_captured:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_other_not_sustained:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_overall: number | null
-          total_all_cohort_size: number | null
-          total_all_destinations_education_further: number | null
-          total_all_destinations_education_higher: number | null
-          total_all_destinations_education_other: number | null
-          total_all_destinations_education_total: number | null
-          total_all_destinations_employment_apprenticeships: number | null
-          total_all_destinations_employment_total: number | null
-          total_all_destinations_other_not_captured: number | null
-          total_all_destinations_other_not_sustained: number | null
-          total_all_destinations_overall: number | null
-          total_all_percentages_education_further: number | null
-          total_all_percentages_education_higher: number | null
-          total_all_percentages_education_other: number | null
-          total_all_percentages_education_total: number | null
-          total_all_percentages_employment_apprenticeships: number | null
-          total_all_percentages_employment_total: number | null
-          total_all_percentages_other_not_captured: number | null
-          total_all_percentages_other_not_sustained: number | null
-          total_all_percentages_overall: number | null
-          total_disadvantaged_cohort_size: number | null
-          total_disadvantaged_destinations_education_further: number | null
-          total_disadvantaged_destinations_education_higher: number | null
-          total_disadvantaged_destinations_education_other: number | null
-          total_disadvantaged_destinations_education_total: number | null
-          total_disadvantaged_destinations_employment_apprenticeships:
-            | number
-            | null
-          total_disadvantaged_destinations_employment_total: number | null
-          total_disadvantaged_destinations_other_not_captured: number | null
-          total_disadvantaged_destinations_other_not_sustained: number | null
-          total_disadvantaged_destinations_overall: number | null
-          total_disadvantaged_percentages_education_further: number | null
-          total_disadvantaged_percentages_education_higher: number | null
-          total_disadvantaged_percentages_education_other: number | null
-          total_disadvantaged_percentages_education_total: number | null
-          total_disadvantaged_percentages_employment_apprenticeships:
-            | number
-            | null
-          total_disadvantaged_percentages_employment_total: number | null
-          total_disadvantaged_percentages_other_not_captured: number | null
-          total_disadvantaged_percentages_other_not_sustained: number | null
-          total_disadvantaged_percentages_overall: number | null
-          total_non_disadvantaged_cohort_size: number | null
-          total_non_disadvantaged_destinations_education_further: number | null
-          total_non_disadvantaged_destinations_education_higher: number | null
-          total_non_disadvantaged_destinations_education_other: number | null
-          total_non_disadvantaged_destinations_education_total: number | null
-          total_non_disadvantaged_destinations_employment_apprenticeships:
-            | number
-            | null
-          total_non_disadvantaged_destinations_employment_total: number | null
-          total_non_disadvantaged_destinations_other_not_captured: number | null
-          total_non_disadvantaged_destinations_other_not_sustained:
-            | number
-            | null
-          total_non_disadvantaged_destinations_overall: number | null
-          total_non_disadvantaged_percentages_education_further: number | null
-          total_non_disadvantaged_percentages_education_higher: number | null
-          total_non_disadvantaged_percentages_education_other: number | null
-          total_non_disadvantaged_percentages_education_total: number | null
-          total_non_disadvantaged_percentages_employment_apprenticeships:
-            | number
-            | null
-          total_non_disadvantaged_percentages_employment_total: number | null
-          total_non_disadvantaged_percentages_other_not_captured: number | null
-          total_non_disadvantaged_percentages_other_not_sustained: number | null
-          total_non_disadvantaged_percentages_overall: number | null
+          percentages_education_further: number | null
+          percentages_education_higher: number | null
+          percentages_education_other: number | null
+          percentages_education_total: number | null
+          percentages_employment_apprenticeships: number | null
+          percentages_employment_total: number | null
+          percentages_other_not_captured: number | null
+          percentages_other_not_sustained: number | null
+          percentages_overall: number | null
+          student_group: Database["public"]["Enums"]["student_group"]
           updated_at: string
           urn: string
           year: string
         }
         Insert: {
+          category: Database["public"]["Enums"]["destination_category"]
+          cohort_size?: number | null
           created_at?: string
+          destinations_education_further?: number | null
+          destinations_education_higher?: number | null
+          destinations_education_other?: number | null
+          destinations_education_total?: number | null
+          destinations_employment_apprenticeships?: number | null
+          destinations_employment_total?: number | null
+          destinations_other_not_captured?: number | null
+          destinations_other_not_sustained?: number | null
+          destinations_overall?: number | null
           id: string
           last_updated: string
-          level2_all_cohort_size?: number | null
-          level2_all_destinations_education_further?: number | null
-          level2_all_destinations_education_higher?: number | null
-          level2_all_destinations_education_other?: number | null
-          level2_all_destinations_education_total?: number | null
-          level2_all_destinations_employment_apprenticeships?: number | null
-          level2_all_destinations_employment_total?: number | null
-          level2_all_destinations_other_not_captured?: number | null
-          level2_all_destinations_other_not_sustained?: number | null
-          level2_all_destinations_overall?: number | null
-          level2_all_percentages_education_further?: number | null
-          level2_all_percentages_education_higher?: number | null
-          level2_all_percentages_education_other?: number | null
-          level2_all_percentages_education_total?: number | null
-          level2_all_percentages_employment_apprenticeships?: number | null
-          level2_all_percentages_employment_total?: number | null
-          level2_all_percentages_other_not_captured?: number | null
-          level2_all_percentages_other_not_sustained?: number | null
-          level2_all_percentages_overall?: number | null
-          level2_disadvantaged_cohort_size?: number | null
-          level2_disadvantaged_destinations_education_further?: number | null
-          level2_disadvantaged_destinations_education_higher?: number | null
-          level2_disadvantaged_destinations_education_other?: number | null
-          level2_disadvantaged_destinations_education_total?: number | null
-          level2_disadvantaged_destinations_employment_apprenticeships?:
-            | number
-            | null
-          level2_disadvantaged_destinations_employment_total?: number | null
-          level2_disadvantaged_destinations_other_not_captured?: number | null
-          level2_disadvantaged_destinations_other_not_sustained?: number | null
-          level2_disadvantaged_destinations_overall?: number | null
-          level2_disadvantaged_percentages_education_further?: number | null
-          level2_disadvantaged_percentages_education_higher?: number | null
-          level2_disadvantaged_percentages_education_other?: number | null
-          level2_disadvantaged_percentages_education_total?: number | null
-          level2_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          level2_disadvantaged_percentages_employment_total?: number | null
-          level2_disadvantaged_percentages_other_not_captured?: number | null
-          level2_disadvantaged_percentages_other_not_sustained?: number | null
-          level2_disadvantaged_percentages_overall?: number | null
-          level2_non_disadvantaged_cohort_size?: number | null
-          level2_non_disadvantaged_destinations_education_further?:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_education_higher?: number | null
-          level2_non_disadvantaged_destinations_education_other?: number | null
-          level2_non_disadvantaged_destinations_education_total?: number | null
-          level2_non_disadvantaged_destinations_employment_apprenticeship?:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_employment_total?: number | null
-          level2_non_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_overall?: number | null
-          level2_non_disadvantaged_percentages_education_further?: number | null
-          level2_non_disadvantaged_percentages_education_higher?: number | null
-          level2_non_disadvantaged_percentages_education_other?: number | null
-          level2_non_disadvantaged_percentages_education_total?: number | null
-          level2_non_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          level2_non_disadvantaged_percentages_employment_total?: number | null
-          level2_non_disadvantaged_percentages_other_not_captured?:
-            | number
-            | null
-          level2_non_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          level2_non_disadvantaged_percentages_overall?: number | null
-          level3_all_cohort_size?: number | null
-          level3_all_destinations_education_further?: number | null
-          level3_all_destinations_education_higher?: number | null
-          level3_all_destinations_education_other?: number | null
-          level3_all_destinations_education_total?: number | null
-          level3_all_destinations_employment_apprenticeships?: number | null
-          level3_all_destinations_employment_total?: number | null
-          level3_all_destinations_other_not_captured?: number | null
-          level3_all_destinations_other_not_sustained?: number | null
-          level3_all_destinations_overall?: number | null
-          level3_all_percentages_education_further?: number | null
-          level3_all_percentages_education_higher?: number | null
-          level3_all_percentages_education_other?: number | null
-          level3_all_percentages_education_total?: number | null
-          level3_all_percentages_employment_apprenticeships?: number | null
-          level3_all_percentages_employment_total?: number | null
-          level3_all_percentages_other_not_captured?: number | null
-          level3_all_percentages_other_not_sustained?: number | null
-          level3_all_percentages_overall?: number | null
-          level3_disadvantaged_cohort_size?: number | null
-          level3_disadvantaged_destinations_education_further?: number | null
-          level3_disadvantaged_destinations_education_higher?: number | null
-          level3_disadvantaged_destinations_education_other?: number | null
-          level3_disadvantaged_destinations_education_total?: number | null
-          level3_disadvantaged_destinations_employment_apprenticeships?:
-            | number
-            | null
-          level3_disadvantaged_destinations_employment_total?: number | null
-          level3_disadvantaged_destinations_other_not_captured?: number | null
-          level3_disadvantaged_destinations_other_not_sustained?: number | null
-          level3_disadvantaged_destinations_overall?: number | null
-          level3_disadvantaged_percentages_education_further?: number | null
-          level3_disadvantaged_percentages_education_higher?: number | null
-          level3_disadvantaged_percentages_education_other?: number | null
-          level3_disadvantaged_percentages_education_total?: number | null
-          level3_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          level3_disadvantaged_percentages_employment_total?: number | null
-          level3_disadvantaged_percentages_other_not_captured?: number | null
-          level3_disadvantaged_percentages_other_not_sustained?: number | null
-          level3_disadvantaged_percentages_overall?: number | null
-          level3_non_disadvantaged_cohort_size?: number | null
-          level3_non_disadvantaged_destinations_education_further?:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_education_higher?: number | null
-          level3_non_disadvantaged_destinations_education_other?: number | null
-          level3_non_disadvantaged_destinations_education_total?: number | null
-          level3_non_disadvantaged_destinations_employment_apprenticeship?:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_employment_total?: number | null
-          level3_non_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_overall?: number | null
-          level3_non_disadvantaged_percentages_education_further?: number | null
-          level3_non_disadvantaged_percentages_education_higher?: number | null
-          level3_non_disadvantaged_percentages_education_other?: number | null
-          level3_non_disadvantaged_percentages_education_total?: number | null
-          level3_non_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          level3_non_disadvantaged_percentages_employment_total?: number | null
-          level3_non_disadvantaged_percentages_other_not_captured?:
-            | number
-            | null
-          level3_non_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          level3_non_disadvantaged_percentages_overall?: number | null
-          other_levels_all_cohort_size?: number | null
-          other_levels_all_destinations_education_further?: number | null
-          other_levels_all_destinations_education_higher?: number | null
-          other_levels_all_destinations_education_other?: number | null
-          other_levels_all_destinations_education_total?: number | null
-          other_levels_all_destinations_employment_apprenticeships?:
-            | number
-            | null
-          other_levels_all_destinations_employment_total?: number | null
-          other_levels_all_destinations_other_not_captured?: number | null
-          other_levels_all_destinations_other_not_sustained?: number | null
-          other_levels_all_destinations_overall?: number | null
-          other_levels_all_percentages_education_further?: number | null
-          other_levels_all_percentages_education_higher?: number | null
-          other_levels_all_percentages_education_other?: number | null
-          other_levels_all_percentages_education_total?: number | null
-          other_levels_all_percentages_employment_apprenticeships?:
-            | number
-            | null
-          other_levels_all_percentages_employment_total?: number | null
-          other_levels_all_percentages_other_not_captured?: number | null
-          other_levels_all_percentages_other_not_sustained?: number | null
-          other_levels_all_percentages_overall?: number | null
-          other_levels_disadvantaged_cohort_size?: number | null
-          other_levels_disadvantaged_destinations_education_further?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_education_higher?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_education_other?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_education_total?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_employment_apprenticesh?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_employment_total?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_overall?: number | null
-          other_levels_disadvantaged_percentages_education_further?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_education_higher?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_education_other?: number | null
-          other_levels_disadvantaged_percentages_education_total?: number | null
-          other_levels_disadvantaged_percentages_employment_apprenticeshi?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_employment_total?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_other_not_captured?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_overall?: number | null
-          other_levels_non_disadvantaged_cohort_size?: number | null
-          other_levels_non_disadvantaged_destinations_education_further?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_higher?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_other?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_total?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_employment_apprenti?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_employment_total?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_overall?: number | null
-          other_levels_non_disadvantaged_percentages_education_further?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_higher?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_other?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_total?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_employment_apprentic?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_employment_total?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_other_not_captured?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_overall?: number | null
-          total_all_cohort_size?: number | null
-          total_all_destinations_education_further?: number | null
-          total_all_destinations_education_higher?: number | null
-          total_all_destinations_education_other?: number | null
-          total_all_destinations_education_total?: number | null
-          total_all_destinations_employment_apprenticeships?: number | null
-          total_all_destinations_employment_total?: number | null
-          total_all_destinations_other_not_captured?: number | null
-          total_all_destinations_other_not_sustained?: number | null
-          total_all_destinations_overall?: number | null
-          total_all_percentages_education_further?: number | null
-          total_all_percentages_education_higher?: number | null
-          total_all_percentages_education_other?: number | null
-          total_all_percentages_education_total?: number | null
-          total_all_percentages_employment_apprenticeships?: number | null
-          total_all_percentages_employment_total?: number | null
-          total_all_percentages_other_not_captured?: number | null
-          total_all_percentages_other_not_sustained?: number | null
-          total_all_percentages_overall?: number | null
-          total_disadvantaged_cohort_size?: number | null
-          total_disadvantaged_destinations_education_further?: number | null
-          total_disadvantaged_destinations_education_higher?: number | null
-          total_disadvantaged_destinations_education_other?: number | null
-          total_disadvantaged_destinations_education_total?: number | null
-          total_disadvantaged_destinations_employment_apprenticeships?:
-            | number
-            | null
-          total_disadvantaged_destinations_employment_total?: number | null
-          total_disadvantaged_destinations_other_not_captured?: number | null
-          total_disadvantaged_destinations_other_not_sustained?: number | null
-          total_disadvantaged_destinations_overall?: number | null
-          total_disadvantaged_percentages_education_further?: number | null
-          total_disadvantaged_percentages_education_higher?: number | null
-          total_disadvantaged_percentages_education_other?: number | null
-          total_disadvantaged_percentages_education_total?: number | null
-          total_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          total_disadvantaged_percentages_employment_total?: number | null
-          total_disadvantaged_percentages_other_not_captured?: number | null
-          total_disadvantaged_percentages_other_not_sustained?: number | null
-          total_disadvantaged_percentages_overall?: number | null
-          total_non_disadvantaged_cohort_size?: number | null
-          total_non_disadvantaged_destinations_education_further?: number | null
-          total_non_disadvantaged_destinations_education_higher?: number | null
-          total_non_disadvantaged_destinations_education_other?: number | null
-          total_non_disadvantaged_destinations_education_total?: number | null
-          total_non_disadvantaged_destinations_employment_apprenticeships?:
-            | number
-            | null
-          total_non_disadvantaged_destinations_employment_total?: number | null
-          total_non_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          total_non_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          total_non_disadvantaged_destinations_overall?: number | null
-          total_non_disadvantaged_percentages_education_further?: number | null
-          total_non_disadvantaged_percentages_education_higher?: number | null
-          total_non_disadvantaged_percentages_education_other?: number | null
-          total_non_disadvantaged_percentages_education_total?: number | null
-          total_non_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          total_non_disadvantaged_percentages_employment_total?: number | null
-          total_non_disadvantaged_percentages_other_not_captured?: number | null
-          total_non_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          total_non_disadvantaged_percentages_overall?: number | null
+          percentages_education_further?: number | null
+          percentages_education_higher?: number | null
+          percentages_education_other?: number | null
+          percentages_education_total?: number | null
+          percentages_employment_apprenticeships?: number | null
+          percentages_employment_total?: number | null
+          percentages_other_not_captured?: number | null
+          percentages_other_not_sustained?: number | null
+          percentages_overall?: number | null
+          student_group: Database["public"]["Enums"]["student_group"]
           updated_at?: string
           urn: string
           year: string
         }
         Update: {
+          category?: Database["public"]["Enums"]["destination_category"]
+          cohort_size?: number | null
           created_at?: string
+          destinations_education_further?: number | null
+          destinations_education_higher?: number | null
+          destinations_education_other?: number | null
+          destinations_education_total?: number | null
+          destinations_employment_apprenticeships?: number | null
+          destinations_employment_total?: number | null
+          destinations_other_not_captured?: number | null
+          destinations_other_not_sustained?: number | null
+          destinations_overall?: number | null
           id?: string
           last_updated?: string
-          level2_all_cohort_size?: number | null
-          level2_all_destinations_education_further?: number | null
-          level2_all_destinations_education_higher?: number | null
-          level2_all_destinations_education_other?: number | null
-          level2_all_destinations_education_total?: number | null
-          level2_all_destinations_employment_apprenticeships?: number | null
-          level2_all_destinations_employment_total?: number | null
-          level2_all_destinations_other_not_captured?: number | null
-          level2_all_destinations_other_not_sustained?: number | null
-          level2_all_destinations_overall?: number | null
-          level2_all_percentages_education_further?: number | null
-          level2_all_percentages_education_higher?: number | null
-          level2_all_percentages_education_other?: number | null
-          level2_all_percentages_education_total?: number | null
-          level2_all_percentages_employment_apprenticeships?: number | null
-          level2_all_percentages_employment_total?: number | null
-          level2_all_percentages_other_not_captured?: number | null
-          level2_all_percentages_other_not_sustained?: number | null
-          level2_all_percentages_overall?: number | null
-          level2_disadvantaged_cohort_size?: number | null
-          level2_disadvantaged_destinations_education_further?: number | null
-          level2_disadvantaged_destinations_education_higher?: number | null
-          level2_disadvantaged_destinations_education_other?: number | null
-          level2_disadvantaged_destinations_education_total?: number | null
-          level2_disadvantaged_destinations_employment_apprenticeships?:
-            | number
-            | null
-          level2_disadvantaged_destinations_employment_total?: number | null
-          level2_disadvantaged_destinations_other_not_captured?: number | null
-          level2_disadvantaged_destinations_other_not_sustained?: number | null
-          level2_disadvantaged_destinations_overall?: number | null
-          level2_disadvantaged_percentages_education_further?: number | null
-          level2_disadvantaged_percentages_education_higher?: number | null
-          level2_disadvantaged_percentages_education_other?: number | null
-          level2_disadvantaged_percentages_education_total?: number | null
-          level2_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          level2_disadvantaged_percentages_employment_total?: number | null
-          level2_disadvantaged_percentages_other_not_captured?: number | null
-          level2_disadvantaged_percentages_other_not_sustained?: number | null
-          level2_disadvantaged_percentages_overall?: number | null
-          level2_non_disadvantaged_cohort_size?: number | null
-          level2_non_disadvantaged_destinations_education_further?:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_education_higher?: number | null
-          level2_non_disadvantaged_destinations_education_other?: number | null
-          level2_non_disadvantaged_destinations_education_total?: number | null
-          level2_non_disadvantaged_destinations_employment_apprenticeship?:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_employment_total?: number | null
-          level2_non_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          level2_non_disadvantaged_destinations_overall?: number | null
-          level2_non_disadvantaged_percentages_education_further?: number | null
-          level2_non_disadvantaged_percentages_education_higher?: number | null
-          level2_non_disadvantaged_percentages_education_other?: number | null
-          level2_non_disadvantaged_percentages_education_total?: number | null
-          level2_non_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          level2_non_disadvantaged_percentages_employment_total?: number | null
-          level2_non_disadvantaged_percentages_other_not_captured?:
-            | number
-            | null
-          level2_non_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          level2_non_disadvantaged_percentages_overall?: number | null
-          level3_all_cohort_size?: number | null
-          level3_all_destinations_education_further?: number | null
-          level3_all_destinations_education_higher?: number | null
-          level3_all_destinations_education_other?: number | null
-          level3_all_destinations_education_total?: number | null
-          level3_all_destinations_employment_apprenticeships?: number | null
-          level3_all_destinations_employment_total?: number | null
-          level3_all_destinations_other_not_captured?: number | null
-          level3_all_destinations_other_not_sustained?: number | null
-          level3_all_destinations_overall?: number | null
-          level3_all_percentages_education_further?: number | null
-          level3_all_percentages_education_higher?: number | null
-          level3_all_percentages_education_other?: number | null
-          level3_all_percentages_education_total?: number | null
-          level3_all_percentages_employment_apprenticeships?: number | null
-          level3_all_percentages_employment_total?: number | null
-          level3_all_percentages_other_not_captured?: number | null
-          level3_all_percentages_other_not_sustained?: number | null
-          level3_all_percentages_overall?: number | null
-          level3_disadvantaged_cohort_size?: number | null
-          level3_disadvantaged_destinations_education_further?: number | null
-          level3_disadvantaged_destinations_education_higher?: number | null
-          level3_disadvantaged_destinations_education_other?: number | null
-          level3_disadvantaged_destinations_education_total?: number | null
-          level3_disadvantaged_destinations_employment_apprenticeships?:
-            | number
-            | null
-          level3_disadvantaged_destinations_employment_total?: number | null
-          level3_disadvantaged_destinations_other_not_captured?: number | null
-          level3_disadvantaged_destinations_other_not_sustained?: number | null
-          level3_disadvantaged_destinations_overall?: number | null
-          level3_disadvantaged_percentages_education_further?: number | null
-          level3_disadvantaged_percentages_education_higher?: number | null
-          level3_disadvantaged_percentages_education_other?: number | null
-          level3_disadvantaged_percentages_education_total?: number | null
-          level3_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          level3_disadvantaged_percentages_employment_total?: number | null
-          level3_disadvantaged_percentages_other_not_captured?: number | null
-          level3_disadvantaged_percentages_other_not_sustained?: number | null
-          level3_disadvantaged_percentages_overall?: number | null
-          level3_non_disadvantaged_cohort_size?: number | null
-          level3_non_disadvantaged_destinations_education_further?:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_education_higher?: number | null
-          level3_non_disadvantaged_destinations_education_other?: number | null
-          level3_non_disadvantaged_destinations_education_total?: number | null
-          level3_non_disadvantaged_destinations_employment_apprenticeship?:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_employment_total?: number | null
-          level3_non_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          level3_non_disadvantaged_destinations_overall?: number | null
-          level3_non_disadvantaged_percentages_education_further?: number | null
-          level3_non_disadvantaged_percentages_education_higher?: number | null
-          level3_non_disadvantaged_percentages_education_other?: number | null
-          level3_non_disadvantaged_percentages_education_total?: number | null
-          level3_non_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          level3_non_disadvantaged_percentages_employment_total?: number | null
-          level3_non_disadvantaged_percentages_other_not_captured?:
-            | number
-            | null
-          level3_non_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          level3_non_disadvantaged_percentages_overall?: number | null
-          other_levels_all_cohort_size?: number | null
-          other_levels_all_destinations_education_further?: number | null
-          other_levels_all_destinations_education_higher?: number | null
-          other_levels_all_destinations_education_other?: number | null
-          other_levels_all_destinations_education_total?: number | null
-          other_levels_all_destinations_employment_apprenticeships?:
-            | number
-            | null
-          other_levels_all_destinations_employment_total?: number | null
-          other_levels_all_destinations_other_not_captured?: number | null
-          other_levels_all_destinations_other_not_sustained?: number | null
-          other_levels_all_destinations_overall?: number | null
-          other_levels_all_percentages_education_further?: number | null
-          other_levels_all_percentages_education_higher?: number | null
-          other_levels_all_percentages_education_other?: number | null
-          other_levels_all_percentages_education_total?: number | null
-          other_levels_all_percentages_employment_apprenticeships?:
-            | number
-            | null
-          other_levels_all_percentages_employment_total?: number | null
-          other_levels_all_percentages_other_not_captured?: number | null
-          other_levels_all_percentages_other_not_sustained?: number | null
-          other_levels_all_percentages_overall?: number | null
-          other_levels_disadvantaged_cohort_size?: number | null
-          other_levels_disadvantaged_destinations_education_further?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_education_higher?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_education_other?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_education_total?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_employment_apprenticesh?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_employment_total?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          other_levels_disadvantaged_destinations_overall?: number | null
-          other_levels_disadvantaged_percentages_education_further?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_education_higher?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_education_other?: number | null
-          other_levels_disadvantaged_percentages_education_total?: number | null
-          other_levels_disadvantaged_percentages_employment_apprenticeshi?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_employment_total?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_other_not_captured?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          other_levels_disadvantaged_percentages_overall?: number | null
-          other_levels_non_disadvantaged_cohort_size?: number | null
-          other_levels_non_disadvantaged_destinations_education_further?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_higher?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_other?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_education_total?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_employment_apprenti?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_employment_total?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          other_levels_non_disadvantaged_destinations_overall?: number | null
-          other_levels_non_disadvantaged_percentages_education_further?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_higher?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_other?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_education_total?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_employment_apprentic?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_employment_total?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_other_not_captured?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          other_levels_non_disadvantaged_percentages_overall?: number | null
-          total_all_cohort_size?: number | null
-          total_all_destinations_education_further?: number | null
-          total_all_destinations_education_higher?: number | null
-          total_all_destinations_education_other?: number | null
-          total_all_destinations_education_total?: number | null
-          total_all_destinations_employment_apprenticeships?: number | null
-          total_all_destinations_employment_total?: number | null
-          total_all_destinations_other_not_captured?: number | null
-          total_all_destinations_other_not_sustained?: number | null
-          total_all_destinations_overall?: number | null
-          total_all_percentages_education_further?: number | null
-          total_all_percentages_education_higher?: number | null
-          total_all_percentages_education_other?: number | null
-          total_all_percentages_education_total?: number | null
-          total_all_percentages_employment_apprenticeships?: number | null
-          total_all_percentages_employment_total?: number | null
-          total_all_percentages_other_not_captured?: number | null
-          total_all_percentages_other_not_sustained?: number | null
-          total_all_percentages_overall?: number | null
-          total_disadvantaged_cohort_size?: number | null
-          total_disadvantaged_destinations_education_further?: number | null
-          total_disadvantaged_destinations_education_higher?: number | null
-          total_disadvantaged_destinations_education_other?: number | null
-          total_disadvantaged_destinations_education_total?: number | null
-          total_disadvantaged_destinations_employment_apprenticeships?:
-            | number
-            | null
-          total_disadvantaged_destinations_employment_total?: number | null
-          total_disadvantaged_destinations_other_not_captured?: number | null
-          total_disadvantaged_destinations_other_not_sustained?: number | null
-          total_disadvantaged_destinations_overall?: number | null
-          total_disadvantaged_percentages_education_further?: number | null
-          total_disadvantaged_percentages_education_higher?: number | null
-          total_disadvantaged_percentages_education_other?: number | null
-          total_disadvantaged_percentages_education_total?: number | null
-          total_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          total_disadvantaged_percentages_employment_total?: number | null
-          total_disadvantaged_percentages_other_not_captured?: number | null
-          total_disadvantaged_percentages_other_not_sustained?: number | null
-          total_disadvantaged_percentages_overall?: number | null
-          total_non_disadvantaged_cohort_size?: number | null
-          total_non_disadvantaged_destinations_education_further?: number | null
-          total_non_disadvantaged_destinations_education_higher?: number | null
-          total_non_disadvantaged_destinations_education_other?: number | null
-          total_non_disadvantaged_destinations_education_total?: number | null
-          total_non_disadvantaged_destinations_employment_apprenticeships?:
-            | number
-            | null
-          total_non_disadvantaged_destinations_employment_total?: number | null
-          total_non_disadvantaged_destinations_other_not_captured?:
-            | number
-            | null
-          total_non_disadvantaged_destinations_other_not_sustained?:
-            | number
-            | null
-          total_non_disadvantaged_destinations_overall?: number | null
-          total_non_disadvantaged_percentages_education_further?: number | null
-          total_non_disadvantaged_percentages_education_higher?: number | null
-          total_non_disadvantaged_percentages_education_other?: number | null
-          total_non_disadvantaged_percentages_education_total?: number | null
-          total_non_disadvantaged_percentages_employment_apprenticeships?:
-            | number
-            | null
-          total_non_disadvantaged_percentages_employment_total?: number | null
-          total_non_disadvantaged_percentages_other_not_captured?: number | null
-          total_non_disadvantaged_percentages_other_not_sustained?:
-            | number
-            | null
-          total_non_disadvantaged_percentages_overall?: number | null
+          percentages_education_further?: number | null
+          percentages_education_higher?: number | null
+          percentages_education_other?: number | null
+          percentages_education_total?: number | null
+          percentages_employment_apprenticeships?: number | null
+          percentages_employment_total?: number | null
+          percentages_other_not_captured?: number | null
+          percentages_other_not_sustained?: number | null
+          percentages_overall?: number | null
+          student_group?: Database["public"]["Enums"]["student_group"]
           updated_at?: string
           urn?: string
           year?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "ks5_destinations_urn_fkey"
+            columns: ["urn"]
+            isOneToOne: false
+            referencedRelation: "establishments"
+            referencedColumns: ["urn"]
+          },
+        ]
       }
       ks5_destinations_stats: {
         Row: {
-          data: Json
+          created_at: string
+          employment: number | null
+          further_education: number | null
+          higher_education: number | null
           id: string
-          school_id: string | null
+          last_updated: string
+          updated_at: string
+          year: string
         }
         Insert: {
-          data: Json
+          created_at?: string
+          employment?: number | null
+          further_education?: number | null
+          higher_education?: number | null
           id: string
-          school_id?: string | null
+          last_updated: string
+          updated_at?: string
+          year: string
         }
         Update: {
-          data?: Json
+          created_at?: string
+          employment?: number | null
+          further_education?: number | null
+          higher_education?: number | null
           id?: string
-          school_id?: string | null
+          last_updated?: string
+          updated_at?: string
+          year?: string
         }
         Relationships: []
       }
@@ -3980,6 +3032,18 @@ export type Database = {
         }
         Returns: undefined
       }
+      school_cleanup_ks5_destinations: {
+        Args: {
+          year_to_clean: string
+        }
+        Returns: undefined
+      }
+      school_cleanup_ks5_he_destinations: {
+        Args: {
+          year_to_clean: string
+        }
+        Returns: undefined
+      }
       school_cleanup_quadrants: {
         Args: Record<PropertyKey, never>
         Returns: undefined
@@ -4042,12 +3106,6 @@ export type Database = {
         }
         Returns: Json
       }
-      school_import_ks4_destinations_stats: {
-        Args: {
-          stats: Json
-        }
-        Returns: Json
-      }
       school_import_ks4_details: {
         Args: {
           details: Json
@@ -4057,6 +3115,24 @@ export type Database = {
       school_import_ks4_results_main: {
         Args: {
           ks4_results: Json
+        }
+        Returns: Json
+      }
+      school_import_ks5_destinations: {
+        Args: {
+          destinations: Json
+        }
+        Returns: Json
+      }
+      school_import_ks5_destinations_stats: {
+        Args: {
+          stats: Json
+        }
+        Returns: Json
+      }
+      school_import_ks5_he_destinations: {
+        Args: {
+          destinations: Json
         }
         Returns: Json
       }
@@ -6062,7 +5138,8 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      destination_category: "total" | "level3" | "level2" | "other_levels"
+      student_group: "all" | "disadvantaged" | "non_disadvantaged"
     }
     CompositeTypes: {
       geometry_dump: {

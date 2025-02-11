@@ -1,5 +1,6 @@
 import { Firestore } from 'firebase/firestore';
 import { SupabaseClient } from '@supabase/supabase-js';
+import { Database } from '@lonli-lokli/supabase/setup-client';
 
 export interface ImportResult {
   success: boolean;
@@ -22,7 +23,7 @@ export type FirebaseImportParams = BaseImportParams & {
 
 export type SupabaseImportParams = BaseImportParams & {
   type: 'supabase';
-  db: SupabaseClient;
+  db: SupabaseClient<Database>;
 };
 
 export type ImportParams = FirebaseImportParams | SupabaseImportParams;
