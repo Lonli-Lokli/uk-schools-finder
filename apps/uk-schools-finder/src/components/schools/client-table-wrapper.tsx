@@ -5,7 +5,14 @@ import { ConfigProvider } from 'antd';
 import { TableOutlined } from '@ant-design/icons';
 import type { CheckboxChangeEvent } from 'antd/es/checkbox';
 import type { TableProps, ColumnsType } from 'antd/es/table';
-import { useMemo, useState, Fragment, useEffect } from 'react';
+import {
+  useMemo,
+  useState,
+  Fragment,
+  useEffect,
+  memo,
+  useCallback,
+} from 'react';
 import {
   Col,
   Row,
@@ -24,6 +31,35 @@ type ExtendedTableProps = TableProps<any> & {
   }[];
 };
 
+const defaultColumns = [
+  'name',
+  'type',
+  'accreditationExpiryDate',
+  'capacity',
+  'boarders',
+  'chNumber',
+  'closeDate',
+  'closeReason',
+  'contact',
+  'country',
+  'establishmentAccredited',
+  'establishmentNumber',
+  'feheId',
+  'gender',
+  'officialSixthForm',
+  'propsName',
+  'senNoStat',
+  'siteName',
+  'specialClasses',
+  'status',
+  'trust',
+  'type',
+].map((key, idx) => ({
+  key: key,
+  title: key,
+  dataIndex: key,
+  hidden: idx > 5,
+}));
 // Minimal client component just for handling interactions
 export function ClientTableWrapper({
   dataSource,
@@ -35,53 +71,32 @@ export function ClientTableWrapper({
 
   console.log(dataSource);
 
-  const [columns, setColumns] = useState([
-    'name',
-    'type',
-    'accreditationExpiryDate',
-    'capacity',
-    'boarders',
-    'chNumber',
-    'closeDate',
-    'closeReason',
-    'contact',
-    'country',
-    'establishmentAccredited',
-    'establishmentNumber',
-    'feheId',
-    'gender',
-    'officialSixthForm',
-    'propsName',
-    'senNoStat',
-    'siteName',
-    'specialClasses',
-    'status',
-    'trust',
-    'type',
-  ].map((key, idx) => ({
-    title: key,
-    dataIndex: key,
-    hidden: idx > 5
-  })));
+  const [columns, setColumns] = useState(defaultColumns);
 
-  const handleTableChange: TableProps<any>['onChange'] = (
-    pagination,
-    filters,
-    sorter
-  ) => {
-    const params = new URLSearchParams(searchParams);
+  const handleTableChange = useCallback<
+    NonNullable<TableProps<any>['onChange']>
+  >(
+    (pagination, filters, sorter) => {
+      const params = new URLSearchParams(searchParams);
 
-    if (pagination.current) {
-      params.set('page', pagination.current.toString());
-    }
+      if (pagination.current) {
+        params.set('page', pagination.current.toString());
+      }
 
-    if (sorter && !Array.isArray(sorter)) {
-      params.set('sort', sorter.field?.toString() ?? '');
-      params.set('order', sorter.order || 'ascend');
-    }
+      if (sorter && !Array.isArray(sorter)) {
+        params.set('sort', sorter.field?.toString() ?? '');
+        params.set('order', sorter.order || 'ascend');
+      }
 
-    router.push(`${pathname}?${params.toString()}`);
-  };
+      router.push(`${pathname}?${params.toString()}`);
+    },
+    [router, pathname, searchParams]
+  );
+
+  const visibleColumns = useMemo(
+    () => columns.filter((col) => !col.hidden),
+    [columns]
+  );
 
   return (
     <ConfigProvider>
@@ -96,7 +111,7 @@ export function ClientTableWrapper({
         </Row>
       </Space>
       <Table
-        columns={columns}
+        columns={visibleColumns}
         dataSource={dataSource}
         pagination={pagination}
         onChange={handleTableChange}
@@ -112,7 +127,7 @@ export interface PropertyFilterProps {
   onChange: (columns: ColumnsType<any>) => void;
 }
 
-const PropertyFilter = (props: PropertyFilterProps) => {
+const PropertyFilter = memo((props: PropertyFilterProps) => {
   const [checked, setChecked] = useState(false);
   const [indeterminate, setIndeterminate] = useState(false);
   const [value, setValue] = useState<any[]>([]);
@@ -184,4 +199,6 @@ const PropertyFilter = (props: PropertyFilterProps) => {
       </Button>
     </Popover>
   );
-};
+});
+
+PropertyFilter.displayName = 'PropertyFilter';

@@ -25,15 +25,11 @@ const default_center = [51.5074, -0.1278] as [number, number];
 export async function SchoolsMap({ filter }: SchoolsMapProps) {
   const filters = parseFilterString(filter);
   const quadrant = await getQuadrantByGeohash({
-    geohash: '',
+    filters,
   });
   return (
     <div className="h-full w-full rounded-lg bg-white shadow">
-      <ClientMap
-        schools={quadrant.schools}
-        center={default_center}
-        zoom={10}
-       />
+      <ClientMap schools={quadrant.schools} center={default_center} zoom={10} />
     </div>
   );
 }
