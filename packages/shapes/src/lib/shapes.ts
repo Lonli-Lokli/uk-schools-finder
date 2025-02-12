@@ -138,14 +138,15 @@ export interface QuadrantDm {
 
 export interface QuadrantSchoolDm {
   urn: string;
-  name: string;
+  name: string | null;
+  type: string | null;
+  capacity: number;
   location: {
     lat: number;
     lng: number;
     geohash: string;
   };
 }
-
 
 export interface BatchRecord<T> {
   id: string;

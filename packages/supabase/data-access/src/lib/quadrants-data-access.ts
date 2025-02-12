@@ -27,65 +27,70 @@ const { supabase } = initializeClientSupabase();
 // }
 
 export async function getQuadrantByGeohash({
-  geohash,
+  filters = {},
 }: {
-  geohash: string;
-}): Promise<QuadrantDm> {
-  const { data: defaultQuadrant, error } = await supabase
+  filters: SchoolFilters;
+}) {
+  const { data: quadrant, error } = await supabase
     .from('quadrants')
-    .select(
-      `
+    .select(`
       id,
       level,
       geohash,
+      school_count,
       bounds:bounding_boxes!bounds_id(
-        id, 
-        ne_lat, 
+        ne_lat,
         ne_lng,
         ne_geohash,
         sw_lat,
         sw_lng,
         sw_geohash
       ),
-      school_count,
-      quadrant_schools(
-        id,
-        urn,
-        name,
+      quadrant_schools!inner(
         lat,
         lng,
-        geohash
+        geohash,
+        establishment:establishments!urn(
+          urn,
+          name,
+          type:establishment_types!type_id(
+            name
+          ),
+          capacity
+        )
       )
-    `
-    )
+    `)
     .eq('level', 0)
     .single();
 
-  if (error || !defaultQuadrant) {
+  if (error || !quadrant) {
     throw new Error(
       'Failed to load default quadrant : ' + (error?.message ?? 'Unknown error')
     );
   }
 
   return {
-    id: defaultQuadrant.id,
-    level: defaultQuadrant.level,
+    id: quadrant.id,
+    level: quadrant.level,
     bounds: {
       ne: {
-        lat: defaultQuadrant.bounds.ne_lat,
-        lng: defaultQuadrant.bounds.ne_lng,
-        geohash: defaultQuadrant.bounds.ne_geohash,
+        lat: quadrant.bounds.ne_lat,
+        lng: quadrant.bounds.ne_lng,
+        geohash: quadrant.bounds.ne_geohash,
       },
       sw: {
-        lat: defaultQuadrant.bounds.sw_lat,
-        lng: defaultQuadrant.bounds.sw_lng,
-        geohash: defaultQuadrant.bounds.sw_geohash,
+        lat: quadrant.bounds.sw_lat,
+        lng: quadrant.bounds.sw_lng,
+        geohash: quadrant.bounds.sw_geohash,
       },
     },
-    schoolCount: defaultQuadrant.school_count,
-    schools: defaultQuadrant.quadrant_schools.map((school) =>
+    schoolCount: quadrant.school_count,
+    schools: quadrant.quadrant_schools.map((school) =>
       identity<QuadrantSchoolDm>({
-        ...school,
+        name: school.establishment.name,
+        capacity: school.establishment.capacity ?? 0, // TODO: remove
+        type: school.establishment.type?.name ?? null,
+        urn: school.establishment.urn,
         location: {
           lat: school.lat,
           lng: school.lng,
