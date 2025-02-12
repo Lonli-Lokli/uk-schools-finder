@@ -38,6 +38,7 @@ export function transformQuadrants(rows: SchoolRow[]): QuadrantBatch {
       id: quadrant.id,
       data: {
         id: quadrant.id,
+        level: quadrant.level,
         bounds: quadrant.bounds,
         schoolCount: quadrant.schools.length,
         schools: quadrant.schools,
@@ -63,6 +64,7 @@ function generateQuadrants(
       quadrants.push({
         id: generateQuadrantId(bounds, level),
         bounds,
+        level,
         schoolCount: quadrantSchools.length,
         schools: quadrantSchools,
       });
@@ -200,3 +202,4 @@ export function splitQuadrant(bounds: BoundingBoxDm): BoundingBoxDm[] {
     },
   ];
 }
+

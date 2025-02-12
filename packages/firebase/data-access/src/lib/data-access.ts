@@ -15,10 +15,6 @@ type GetSchoolsParams = {
 
 const { db } = initializeClientFirebase();
 
-type SortField = {
-  field: string;
-  order: 'ascend' | 'descend';
-};
 
 export async function getSchools({
   page,

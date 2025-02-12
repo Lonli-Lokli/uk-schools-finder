@@ -1,8 +1,12 @@
 import { SchoolBatch } from '@lonli-lokli/data-transformers';
-import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
-import { Database } from '@lonli-lokli/supabase/setup-client';
+import {
+  SupabaseImportParams,
+  ImportResult,
+  Database,
+} from '@lonli-lokli/shapes';
 
-import { identity, importInBatches } from './core';
+import { importInBatches } from './core';
+import { identity } from '@lonli-lokli/core';
 
 type EstablishmentTypeInsert =
   Database['public']['Tables']['establishment_types']['Insert'];

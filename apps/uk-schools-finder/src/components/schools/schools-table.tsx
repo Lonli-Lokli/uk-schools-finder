@@ -1,26 +1,26 @@
-import { SchoolDm } from '@lonli-lokli/shapes';
 import { ClientTableWrapper } from './client-table-wrapper';
+import { parseFilterString, parseSortString } from './utils';
+import { getSchools } from '@lonli-lokli/supabase/data-access';
 
 type SchoolsTableProps = {
-  schools: SchoolDm[];
-  total: number;
-  pageSize: number;
   currentPage: number;
-  sortFields: {
-    field: string;
-    order: 'ascend' | 'descend';
-  }[];
+  sort: string;
+  filter: string;
 };
 
-
-export function SchoolsTable({
-  schools,
-  total,
-  pageSize,
+export async function SchoolsTable({
   currentPage,
-  sortFields,
-
+  sort,
+  filter,
 }: SchoolsTableProps) {
+  const filters = parseFilterString(filter);
+  const sortFields = parseSortString(sort);
+
+  const { schools, total, pageSize } = await getSchools({
+    page: currentPage,
+    sortFields,
+    filters,
+  });
   return (
     <div className="bg-white rounded-lg shadow">
       <ClientTableWrapper
@@ -35,4 +35,4 @@ export function SchoolsTable({
       />
     </div>
   );
-} 
+}

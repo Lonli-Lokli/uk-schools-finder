@@ -1,7 +1,7 @@
 import { KS5HEDestinationsBatch } from '@lonli-lokli/data-transformers';
-import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
-import { identity, importInBatches } from './core';
-import { Database } from '@lonli-lokli/supabase/setup-client';
+import { SupabaseImportParams, ImportResult, Database } from '@lonli-lokli/shapes';
+import { importInBatches } from './core';
+import { identity } from '@lonli-lokli/core';
 
 type KS5HEDestinationsInsert =
   Database['public']['Tables']['ks5_he_destinations']['Insert'];

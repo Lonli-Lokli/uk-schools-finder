@@ -301,6 +301,7 @@ CREATE TABLE public.bounding_boxes (
 CREATE TABLE public.quadrants (
     id text PRIMARY KEY,
     bounds_id text NOT NULL REFERENCES bounding_boxes(id),
+    level integer NOT NULL,
     school_count integer NOT NULL,
     created_at timestamptz NOT NULL DEFAULT NOW(),
     updated_at timestamptz NOT NULL DEFAULT NOW()
@@ -738,3 +739,4 @@ CREATE INDEX idx_ks4_destinations_main_urn_year ON ks4_destinations_main(urn, ye
 CREATE INDEX idx_ks4_destinations_details_urn_year ON ks4_destinations_details(urn, year);
 
 CREATE INDEX idx_ks5_destinations_urn_year ON ks5_destinations(urn, year);
+CREATE INDEX idx_quadrants_level ON quadrants(level);

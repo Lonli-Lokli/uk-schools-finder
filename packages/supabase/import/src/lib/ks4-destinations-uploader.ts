@@ -1,7 +1,7 @@
 import { KS4DestinationsBatch } from '@lonli-lokli/data-transformers';
-import { identity, importInBatches } from './core';
-import { ImportResult, SupabaseImportParams } from '@lonli-lokli/shapes';
-import { Database } from '@lonli-lokli/supabase/setup-client';
+import {  importInBatches } from './core';
+import { ImportResult, SupabaseImportParams, Database } from '@lonli-lokli/shapes';
+import { identity } from '@lonli-lokli/core';
 
 type KS4DestinationsInsert =
   Database['public']['Tables']['ks4_destinations_main']['Insert'];

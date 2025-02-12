@@ -2,9 +2,9 @@ import { RegionBatch } from '@lonli-lokli/data-transformers';
 import {
   SupabaseImportParams,
   ImportResult,
+  Database,
 } from '@lonli-lokli/shapes';
-import { identity } from './core';
-import { Database } from '@lonli-lokli/supabase/setup-client';
+import { identity } from '@lonli-lokli/core';
 
 type RegionInsert = Database['public']['Tables']['regions']['Insert'];
 

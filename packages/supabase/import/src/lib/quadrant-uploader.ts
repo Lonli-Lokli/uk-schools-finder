@@ -1,7 +1,7 @@
 import { QuadrantBatch } from '@lonli-lokli/data-transformers';
-import { SupabaseImportParams, ImportResult } from '@lonli-lokli/shapes';
-import { identity, importInBatches } from './core';
-import { Database } from '@lonli-lokli/supabase/setup-client';
+import { SupabaseImportParams, ImportResult, Database } from '@lonli-lokli/shapes';
+import { importInBatches } from './core';
+import { identity } from '@lonli-lokli/core';
 
 type BoundingBoxInsert =
   Database['public']['Tables']['bounding_boxes']['Insert'];
@@ -54,7 +54,8 @@ export async function uploadQuadrants(
         identity<QuadrantInsert>({
           id: item.id,
           bounds_id: item.id,
-          school_count: item.data.schools.length,
+          level: item.data.level,
+          school_count: item.data.schools.length
         })
       ),
       'school_import_quadrants',

@@ -1,11 +1,5 @@
-import type { Database } from './database.types';
+import { Database } from '@lonli-lokli/shapes';
 import { SupabaseClient } from '@supabase/supabase-js';
-
-
-export function identity<T>(value: T): T {
-  return value;
-}
-
 
 function chunk<T>(array: T[], size: number): T[][] {
   return Array.from({ length: Math.ceil(array.length / size) }, (_, i) =>

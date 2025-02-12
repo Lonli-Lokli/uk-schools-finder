@@ -34,17 +34,18 @@ $$ LANGUAGE plpgsql SECURITY DEFINER;
 
 
 -- Function to import quadrants
-REATE OR REPLACE FUNCTION public.school_import_quadrants(quads jsonb)
+CREATE OR REPLACE FUNCTION public.school_import_quadrants(quads jsonb)
 RETURNS jsonb AS $$
 BEGIN
   INSERT INTO quadrants (
-    id, bounds_id, school_count
+    id, bounds_id, level, school_count
   )
   SELECT * FROM jsonb_to_recordset(quads) AS x(
-    id text, bounds_id text, school_count integer
+    id text, bounds_id text, level integer, school_count integer
   )
   ON CONFLICT (id) DO UPDATE SET
     bounds_id = EXCLUDED.bounds_id,
+    level = EXCLUDED.level,
     school_count = EXCLUDED.school_count,
     updated_at = NOW();
 

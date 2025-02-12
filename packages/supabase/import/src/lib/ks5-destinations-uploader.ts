@@ -3,9 +3,10 @@ import {
   SupabaseImportParams,
   ImportResult,
   DestinationStatsDm,
+  Database,
 } from '@lonli-lokli/shapes';
-import { importInBatches, identity } from './core';
-import { Database } from '@lonli-lokli/supabase/setup-client';
+import { importInBatches } from './core';
+import { identity } from '@lonli-lokli/core';
 
 type KS5DestinationsMainInsert =
   Database['public']['Tables']['ks5_destinations']['Insert'];

@@ -1327,21 +1327,27 @@ export type Database = {
         Row: {
           bounds_id: string
           created_at: string
+          geohash: string
           id: string
+          level: number
           school_count: number
           updated_at: string
         }
         Insert: {
           bounds_id: string
           created_at?: string
+          geohash?: string
           id: string
+          level?: number
           school_count: number
           updated_at?: string
         }
         Update: {
           bounds_id?: string
           created_at?: string
+          geohash?: string
           id?: string
+          level?: number
           school_count?: number
           updated_at?: string
         }

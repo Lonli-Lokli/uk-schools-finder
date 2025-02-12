@@ -12,7 +12,11 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body className="min-h-screen">
+        <main className="container mx-auto h-screen max-w-none px-4">
+          {children}
+        </main>
+      </body>
     </html>
   );
 }

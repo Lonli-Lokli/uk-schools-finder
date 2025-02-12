@@ -7,11 +7,10 @@ export interface SchoolDm {
   chNumber: string | null;
 
   // References
-  typeId: string | null;
-  phaseId: string | null;
-  locationId: string | null;
-  trustId: string | null;
-  leaCode: string | null;
+  type: EstablishmentTypeDm | null;
+  phase: EducationPhaseDm | null;
+  location: LocationDm | null;
+  trust: TrustDm | null;
 
   // Status
   status: string | null;
@@ -61,48 +60,48 @@ export interface EstablishmentTypeDm {
 export interface EducationPhaseDm {
   name: string;
   statutoryAges: {
-    low: number;
-    high: number;
+    low: number | null;
+    high: number | null;
   };
 }
 
 export interface LocationDm {
-  street: string;
-  locality: string;
-  address3: string;
-  town: string;
-  county: string;
+  street: string | null;
+  locality: string | null;
+  address3: string | null;
+  town: string | null;
+  county: string | null;
   postcode: string | null;
   coordinates: {
-    easting: number;
-    northing: number;
+    easting: number | null;
+    northing: number | null;
     uprn: number | null;
     latitude: number | null;
     longitude: number | null;
     geohash: string | null;
   };
   administrative: {
-    laCode: number;
-    laName: string;
-    gssLaCode: string;
-    msoaCode: string;
-    msoaName: string;
-    lsoaCode: string;
-    lsoaName: string;
-    ward: string;
-    district: string;
-    constituency: string;
-    urbanRural: string;
-    gor: string;
+    laCode: number | null;
+    laName: string | null;
+    gssLaCode: string | null;
+    msoaCode: string | null;
+    msoaName: string | null;
+    lsoaCode: string | null;
+    lsoaName: string | null;
+    ward: string | null;
+    district: string | null;
+    constituency: string | null;
+    urbanRural: string | null;
+    gor: string | null;
   };
 }
 
 export interface TrustDm {
   name: string;
-  sponsorFlag: string;
-  sponsors: string;
-  federationFlag: string;
-  federations: string;
+  sponsorFlag: string | null;
+  sponsors: string | null;
+  federationFlag: string | null;
+  federations: string | null;
 }
 
 export interface SchoolCensusDm {
@@ -131,6 +130,7 @@ export interface BoundingBoxDm {
 
 export interface QuadrantDm {
   id: string;
+  level: number;
   bounds: BoundingBoxDm;
   schoolCount: number;
   schools: QuadrantSchoolDm[];
