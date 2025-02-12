@@ -4,10 +4,10 @@ import { Database } from '@lonli-lokli/shapes';
 // required for `next build` command
 declare global {
   interface ImportMetaEnv {
-    [key: string]: any
+    [key: string]: any;
   }
   interface ImportMeta {
-    readonly env: ImportMetaEnv
+    readonly env: ImportMetaEnv;
   }
 }
 
@@ -16,11 +16,13 @@ let supabaseInstance: SupabaseClient<Database> = null!;
 const SUPABASE_CONFIG = {
   PUBLIC_SUPABASE_URL:
     typeof import.meta.env !== 'undefined'
-      ? import.meta.env['VITE_PUBLIC_SUPABASE_URL']
+      ? import.meta.env['VITE_PUBLIC_SUPABASE_URL'] ||
+        process.env['NEXT_PUBLIC_SUPABASE_URL']
       : process.env['NEXT_PUBLIC_SUPABASE_URL'],
   VITE_PUBLIC_SUPABASE_KEY:
     typeof import.meta.env !== 'undefined'
-      ? import.meta.env['VITE_PUBLIC_SUPABASE_KEY']
+      ? import.meta.env['VITE_PUBLIC_SUPABASE_KEY'] ||
+        process.env['NEXT_PUBLIC_SUPABASE_KEY']
       : process.env['NEXT_PUBLIC_SUPABASE_KEY'],
 };
 const initializeClientSupabase = () => {
