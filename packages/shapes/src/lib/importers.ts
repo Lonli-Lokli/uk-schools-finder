@@ -1,6 +1,6 @@
 import { Firestore } from 'firebase/firestore';
 import { SupabaseClient } from '@supabase/supabase-js';
-import { Database } from '@lonli-lokli/supabase/setup-client';
+import { Database } from './database.types';
 
 export interface ImportResult {
   success: boolean;

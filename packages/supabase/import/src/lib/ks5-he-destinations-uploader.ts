@@ -6,7 +6,7 @@ import { Database } from '@lonli-lokli/supabase/setup-client';
 type KS5HEDestinationsInsert =
   Database['public']['Tables']['ks5_he_destinations']['Insert'];
 
-export async function uploadKS5HeDestinations(
+export async function uploadKS5HEDestinations(
   batch: KS5HEDestinationsBatch,
   { db, onProgress, year }: SupabaseImportParams
 ): Promise<ImportResult> {

@@ -1,5 +1,5 @@
 {
-  "name": "setup-client",
+  "name": "firebase-setup-client",
   "$schema": "../../../node_modules/nx/schemas/project-schema.json",
   "sourceRoot": "packages/firebase/setup-client/src",
   "projectType": "library",

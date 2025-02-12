@@ -1,5 +1,5 @@
 {
-  "name": "@lonli-lokli/shapes",
+  "name": "@lonli-lokli/firebase/data-access",
   "version": "0.0.1",
   "dependencies": {
     "tslib": "^2.3.0"

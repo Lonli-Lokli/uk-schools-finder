@@ -20,8 +20,8 @@ export const KS5HEDestinationsSchema = z.object({
   // Disadvantaged versions
   DIS_OXBRIDGE: mustBeNumber(),
   DIS_RUSSELL: mustBeNumber(),
-  DIS_TOP3RD: mustBeNumber(),
-  DIS_HTECH: mustBeNumber(),
+  DIS_TOP3RD: mustBePercentage(),
+  DIS_HTECH: mustBePercentage(),
 
   DIS_OXBRIDGEPER: mustBePercentage(),
   DIS_RUSSELLPER: mustBePercentage(),

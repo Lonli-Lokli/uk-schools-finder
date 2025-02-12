@@ -1,5 +1,5 @@
+import { QuadrantSchoolDm } from '@lonli-lokli/shapes';
 import dynamic from 'next/dynamic';
-import { SchoolDm } from '../../shapes';
 
 
 // Dynamically import the client-side map component with no SSR
@@ -16,7 +16,7 @@ const ClientMap = dynamic(
 );
 
 type SchoolsMapProps = {
-  schools: SchoolDm[];
+  schools: QuadrantSchoolDm[];
   center?: [number, number];
   zoom?: number;
 };

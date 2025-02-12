@@ -1,5 +1,5 @@
+import { SchoolDm } from '@lonli-lokli/shapes';
 import { ClientTableWrapper } from './client-table-wrapper';
-import { SchoolDm } from '../../shapes';
 
 type SchoolsTableProps = {
   schools: SchoolDm[];

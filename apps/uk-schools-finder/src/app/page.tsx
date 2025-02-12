@@ -1,6 +1,5 @@
 import { SchoolsTable, SchoolsMap } from '../components';
-import { getSchools } from '../data-access/schools';
-
+import { getSchools } from '@lonli-lokli/firebase/data-access';
 type SearchParams = {
   page?: string;
   sort?: string;
@@ -53,7 +52,7 @@ export default async function SchoolFinderPage({
           </section>
 
           <section className="order-1 h-[300px] lg:order-2 lg:h-[calc(100vh-2rem)] lg:sticky lg:top-4">
-            <SchoolsMap schools={schools} />
+            <SchoolsMap schools={schools as any} />
           </section>
         </div>
       </div>

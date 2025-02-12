@@ -25,6 +25,9 @@
       "@lonli-lokli/firebase-extensions": [
         "packages/firebase/extensions/src/index.ts"
       ],
+      "@lonli-lokli/firebase/data-access": [
+        "packages/firebase/data-access/src/index.ts"
+      ],
       "@lonli-lokli/firebase/import": ["packages/firebase/import/src/index.ts"],
       "@lonli-lokli/firebase/setup": ["packages/firebase/setup/src/index.ts"],
       "@lonli-lokli/firebase/setup-client": [
@@ -32,6 +35,9 @@
       ],
       "@lonli-lokli/shapes": ["packages/shapes/src/index.ts"],
       "@lonli-lokli/sign-in": ["packages/sign-in/src/index.ts"],
+      "@lonli-lokli/supabase/data-access": [
+        "packages/supabase/data-access/src/index.ts"
+      ],
       "@lonli-lokli/supabase/import": ["packages/supabase/import/src/index.ts"],
       "@lonli-lokli/supabase/setup-client": [
         "packages/supabase/setup-client/src/index.ts"

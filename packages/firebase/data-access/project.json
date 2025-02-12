@@ -1,0 +1,19 @@
+{
+  "name": "firebase-data-access",
+  "$schema": "../../../node_modules/nx/schemas/project-schema.json",
+  "sourceRoot": "packages/firebase/data-access/src",
+  "projectType": "library",
+  "tags": [],
+  "targets": {
+    "build": {
+      "executor": "@nx/js:tsc",
+      "outputs": ["{options.outputPath}"],
+      "options": {
+        "outputPath": "dist/packages/firebase/data-access",
+        "main": "packages/firebase/data-access/src/index.ts",
+        "tsConfig": "packages/firebase/data-access/tsconfig.lib.json",
+        "assets": ["packages/firebase/data-access/*.md"]
+      }
+    }
+  }
+}

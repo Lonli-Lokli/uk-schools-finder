@@ -2,9 +2,9 @@
 
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { SchoolDm } from '../../shapes';
+import { QuadrantSchoolDm } from '@lonli-lokli/shapes';
 type ClientMapProps = {
-  schools: SchoolDm[];
+  schools: QuadrantSchoolDm[];
   center: [number, number];
   zoom: number;
 };
@@ -18,10 +18,10 @@ export function ClientMap({ schools, center, zoom }: ClientMapProps) {
       />
       {schools.map((school) => (
         <Marker
-          key={school.id}
+          key={school.urn}
           position={[
-            school.location.coordinates.latitude,
-            school.location.coordinates.longitude,
+            school.location.lat,
+            school.location.lng,
           ]}
         >
           <Popup>
