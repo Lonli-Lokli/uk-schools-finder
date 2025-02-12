@@ -5,15 +5,6 @@
   "projectType": "library",
   "tags": [],
   "targets": {
-    "build": {
-      "executor": "@nx/js:tsc",
-      "outputs": ["{options.outputPath}"],
-      "options": {
-        "outputPath": "dist/packages/supabase/setup-client",
-        "main": "packages/supabase/setup-client/src/index.ts",
-        "tsConfig": "packages/supabase/setup-client/tsconfig.lib.json",
-        "assets": ["packages/supabase/setup-client/*.md"]
-      }
-    }
+   
   }
 }

@@ -1,8 +1,0 @@
-{
-  "name": "@lonli-lokli/firebase-extensions",
-  "version": "0.0.1",
-  "dependencies": {},
-  "type": "module",
-  "main": "./index.js",
-  "typings": "./index.d.ts"
-}

@@ -6,6 +6,16 @@ import {
 import { getFirestore as getClientFirestore } from 'firebase/firestore';
 import { getStorage as getClientStorage } from 'firebase/storage';
 
+// required for `next build` command
+declare global {
+  interface ImportMetaEnv {
+    [key: string]: any
+  }
+  interface ImportMeta {
+    readonly env: ImportMetaEnv
+  }
+}
+
 const firebaseConfig: FirebaseOptions = typeof import.meta.env !== 'undefined' ? {
   apiKey: import.meta.env['VITE_PUBLIC_FIREBASE_API_KEY'],
   authDomain: import.meta.env['VITE_PUBLIC_FIREBASE_AUTH_DOMAIN'],
