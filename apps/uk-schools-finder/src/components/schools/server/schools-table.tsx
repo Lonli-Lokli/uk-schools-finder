@@ -1,6 +1,6 @@
-import { ClientTableWrapper } from './client-table-wrapper';
-import { parseFilterString, parseSortString } from './utils';
 import { getSchools } from '@lonli-lokli/supabase/data-access';
+import { parseFilterString, parseSortString } from '../utils';
+import { ClientTable } from '../client';
 
 type SchoolsTableProps = {
   currentPage: number;
@@ -23,14 +23,12 @@ export async function SchoolsTable({
   });
   return (
     <div className="bg-white rounded-lg shadow">
-      <ClientTableWrapper
-        dataSource={schools}
-        pagination={{
-          current: currentPage,
-          pageSize,
-          total,
-          showSizeChanger: false,
-        }}
+      <ClientTable
+        schools={schools}
+        currentPage={currentPage}
+        total={total}
+        pageSize={pageSize}
+        filters={filters}
         sortFields={sortFields}
       />
     </div>

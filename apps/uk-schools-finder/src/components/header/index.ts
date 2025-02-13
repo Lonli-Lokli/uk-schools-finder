@@ -1,0 +1,1 @@
+export { HeaderArea } from './header';

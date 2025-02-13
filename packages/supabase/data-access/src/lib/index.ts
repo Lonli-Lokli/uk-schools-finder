@@ -1,2 +1,2 @@
 export { getSchools } from './schools-data-access';
-export { getQuadrantByGeohash } from './quadrants-data-access';
+export { getQuadrantForBounds } from './quadrants-data-access';

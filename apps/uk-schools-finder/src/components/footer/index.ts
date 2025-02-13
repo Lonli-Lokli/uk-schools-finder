@@ -1,0 +1,1 @@
+export { FooterArea } from './footer';

@@ -11,9 +11,8 @@ import {
   Marker,
   Popup,
 } from 'react-leaflet';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useCallback } from 'react';
-import { geohashForLocation } from 'geofire-common';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect } from 'react';
 import { QuadrantSchoolDm } from '@lonli-lokli/shapes';
 
 const { Title, Text } = Typography;
@@ -35,7 +34,12 @@ type ClientMapProps = {
 
 export function ClientMap({ schools, center, zoom }: ClientMapProps) {
   return (
-    <MapContainer center={center} zoom={zoom} className="h-full w-full">
+    <MapContainer
+      center={center}
+      zoom={zoom}
+      className="h-full w-full"
+      style={{ height: '100%' }}
+    >
       <ViewportHandler />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -57,7 +61,7 @@ export function ClientMap({ schools, center, zoom }: ClientMapProps) {
                   {school.type}
                 </Text>
               )}
-              
+
               {school.capacity && (
                 <Text type="secondary" className="block text-sm">
                   {school.capacity} pupils
@@ -75,35 +79,30 @@ function ViewportHandler() {
   const map = useMap();
   const router = useRouter();
   const searchParams = useSearchParams();
+  const pathname = usePathname();
 
-  const updateViewportGeohash = useCallback(() => {
-    const center = map.getCenter();
-    const geohash = geohashForLocation([center.lat, center.lng], 9);
+  const updateViewportParams = useCallback(() => {
+    const bounds = map.getBounds();
+    const params = new URLSearchParams(searchParams);
 
-    const params = new URLSearchParams(searchParams.toString());
-    params.set('vg', geohash);
+    params.set('ne_lat', bounds.getNorthEast().lat.toString());
+    params.set('ne_lng', bounds.getNorthEast().lng.toString());
+    params.set('sw_lat', bounds.getSouthWest().lat.toString());
+    params.set('sw_lng', bounds.getSouthWest().lng.toString());
+    params.set('zoom', map.getZoom().toString());
 
-    router.push(`?${params.toString()}`, { scroll: false });
-  }, [map, router, searchParams]);
+    router.push(`${pathname}?${params.toString()}`);
+  }, [map, router, searchParams, pathname]);
+
+  useEffect(() => {
+    // Initial bounds update
+    updateViewportParams();
+  }, [updateViewportParams]);
 
   useMapEvents({
-    moveend: updateViewportGeohash,
-    zoomend: updateViewportGeohash,
+    moveend: updateViewportParams,
+    zoomend: updateViewportParams,
   });
 
   return null;
 }
-
-// Add this CSS to your global styles
-const styles = `
-.school-popup .leaflet-popup-content-wrapper {
-  border-radius: 8px;
-  padding: 0;
-}
-.school-popup .leaflet-popup-content {
-  margin: 0;
-}
-.school-popup .ant-card {
-  border-radius: 8px;
-}
-`;
