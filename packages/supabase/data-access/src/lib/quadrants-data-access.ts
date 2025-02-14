@@ -42,10 +42,10 @@ export async function getQuadrantForBounds({
     .from('quadrants')
     .select(QUADRANT_QUERY)
     // Find quadrants that fully contain the viewport
-    .lte('bounds.ne_lat', bounds.ne.lat)
-    .gte('bounds.sw_lat', bounds.sw.lat)
-    .lte('bounds.ne_lng', bounds.ne.lng)
-    .gte('bounds.sw_lng', bounds.sw.lng)
+    .gte('bounds.ne_lat', bounds.ne.lat) // Quadrant NE should be higher than viewport NE
+    .lte('bounds.sw_lat', bounds.sw.lat) // Quadrant SW should be lower than viewport SW
+    .gte('bounds.ne_lng', bounds.ne.lng) // Quadrant NE should be more east than viewport NE
+    .lte('bounds.sw_lng', bounds.sw.lng) // Quadrant SW should be more west than viewport SW
     .order('level', { ascending: false }) // Get smallest quadrant (highest level) first
     .limit(1)
     .single();
@@ -154,5 +154,6 @@ const QUADRANT_QUERY = `
       ),
       capacity
     )
-  )
+  ),
+  count:quadrant_schools(count)
 ` as const;
