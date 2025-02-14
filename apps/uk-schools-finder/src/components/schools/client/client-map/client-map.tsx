@@ -6,14 +6,11 @@ import 'leaflet/dist/leaflet.css';
 import {
   MapContainer,
   TileLayer,
-  useMap,
-  useMapEvents,
   Marker,
   Popup,
 } from 'react-leaflet';
-import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { useCallback, useEffect } from 'react';
 import { QuadrantSchoolDm } from '@lonli-lokli/shapes';
+import { ViewportHandler } from './viewport-handler';
 
 const { Title, Text } = Typography;
 
@@ -33,6 +30,7 @@ type ClientMapProps = {
 };
 
 export function ClientMap({ schools, center, zoom }: ClientMapProps) {
+  console.log('SCHOOLS', schools.length);
   return (
     <MapContainer
       center={center}
@@ -73,36 +71,4 @@ export function ClientMap({ schools, center, zoom }: ClientMapProps) {
       ))}
     </MapContainer>
   );
-}
-
-function ViewportHandler() {
-  const map = useMap();
-  const router = useRouter();
-  const searchParams = useSearchParams();
-  const pathname = usePathname();
-
-  const updateViewportParams = useCallback(() => {
-    const bounds = map.getBounds();
-    const params = new URLSearchParams(searchParams);
-
-    params.set('ne_lat', bounds.getNorthEast().lat.toString());
-    params.set('ne_lng', bounds.getNorthEast().lng.toString());
-    params.set('sw_lat', bounds.getSouthWest().lat.toString());
-    params.set('sw_lng', bounds.getSouthWest().lng.toString());
-    params.set('zoom', map.getZoom().toString());
-
-    router.push(`${pathname}?${params.toString()}`);
-  }, [map, router, searchParams, pathname]);
-
-  useEffect(() => {
-    // Initial bounds update
-    updateViewportParams();
-  }, [updateViewportParams]);
-
-  useMapEvents({
-    moveend: updateViewportParams,
-    zoomend: updateViewportParams,
-  });
-
-  return null;
 }

@@ -3,12 +3,8 @@ type SearchParams = {
   page?: string;
   sort?: string;
   filter?: string;
-  ne_lat?: string;
-  ne_lng?: string;
-  sw_lat?: string;
-  sw_lng?: string;
-  zoom?: string;
-};
+  v?: string;
+}
 
 export default function SchoolFinderPage({
   searchParams,
@@ -28,11 +24,7 @@ export default function SchoolFinderPage({
       <section className="h-full">
         <SchoolsMap
           filter={searchParams.filter ?? ''}
-          ne_lat={searchParams.ne_lat}
-          ne_lng={searchParams.ne_lng}
-          sw_lat={searchParams.sw_lat}
-          sw_lng={searchParams.sw_lng}
-          zoom={searchParams.zoom}
+          viewport={searchParams.v}
         />
       </section>
     </div>

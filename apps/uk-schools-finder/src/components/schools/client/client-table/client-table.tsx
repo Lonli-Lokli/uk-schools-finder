@@ -47,7 +47,6 @@ export function ClientTable({
 
   const { columns } = useUnit($viewModel);
 
-  console.log('RERENDER', columns);
   const handleTableChange = useCallback<
     NonNullable<TableProps<SchoolDm>['onChange']>
   >(
@@ -98,7 +97,7 @@ export function ClientTable({
         dataSource={schools}
         pagination={pagination}
         onChange={handleTableChange}
-        rowKey="id"
+        rowKey="urn"
         scroll={scrollStyles}
       />
     </ConfigProvider>

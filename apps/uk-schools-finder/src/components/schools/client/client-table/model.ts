@@ -12,9 +12,6 @@ export const columnVisibilityChanged = createEvent<{
 
 // events
 const $columns = createStore(getDefaultColumns());
-$columns.watch((columns) => {
-  console.log('MODEL', columns);
-});
 const $allColumnState = $columns.map<'checked' | 'unchecked' | 'indeterminate'>(
   (columns) =>
     columns.every((column) => !column.hidden)

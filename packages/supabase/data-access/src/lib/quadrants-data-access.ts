@@ -1,8 +1,10 @@
 import {
   QuadrantDm,
+  QuadrantSchoolDm,
   SchoolFilters,
 } from '@lonli-lokli/shapes';
 import { initializeClientSupabase } from '@lonli-lokli/supabase/setup-client';
+import { identity } from 'packages/core/src/lib/core';
 
 interface MapBounds {
   ne: { lat: number; lng: number };
@@ -52,24 +54,6 @@ export async function getQuadrantForBounds({
     return getDefaultQuadrant();
   }
 
-  return mapQuadrantResponse(quadrant);
-}
-
-async function getDefaultQuadrant() {
-  const { data: quadrant, error } = await supabase
-    .from('quadrants')
-    .select(QUADRANT_QUERY)
-    .eq('level', 0)
-    .single();
-
-  if (error || !quadrant) {
-    throw new Error('Failed to load default quadrant');
-  }
-
-  return mapQuadrantResponse(quadrant);
-}
-
-function mapQuadrantResponse(quadrant: any): QuadrantDm {
   return {
     id: quadrant.id,
     level: quadrant.level,
@@ -86,17 +70,62 @@ function mapQuadrantResponse(quadrant: any): QuadrantDm {
       },
     },
     schoolCount: quadrant.school_count,
-    schools: quadrant.quadrant_schools.map((school: any) => ({
-      name: school.establishment.name,
-      capacity: school.establishment.capacity ?? 0,
-      type: school.establishment.type?.name ?? null,
-      urn: school.establishment.urn,
-      location: {
-        lat: school.lat,
-        lng: school.lng,
-        geohash: school.geohash,
+    schools: quadrant.quadrant_schools.map((school) =>
+      identity<QuadrantSchoolDm>({
+        name: school.establishment.name,
+        capacity: school.establishment.capacity ?? 0,
+        type: school.establishment.type?.name ?? null,
+        urn: school.establishment.urn,
+        location: {
+          lat: school.lat,
+          lng: school.lng,
+          geohash: school.geohash,
+        },
+      })
+    ),
+  };
+}
+
+async function getDefaultQuadrant(): Promise<QuadrantDm> {
+  const { data: quadrant, error } = await supabase
+    .from('quadrants')
+    .select(QUADRANT_QUERY)
+    .eq('level', 0)
+    .single();
+
+  if (error || !quadrant) {
+    throw new Error('Failed to load default quadrant');
+  }
+
+  return {
+    id: quadrant.id,
+    level: quadrant.level,
+    bounds: {
+      ne: {
+        lat: quadrant.bounds.ne_lat,
+        lng: quadrant.bounds.ne_lng,
+        geohash: quadrant.bounds.ne_geohash,
       },
-    })),
+      sw: {
+        lat: quadrant.bounds.sw_lat,
+        lng: quadrant.bounds.sw_lng,
+        geohash: quadrant.bounds.sw_geohash,
+      },
+    },
+    schoolCount: quadrant.school_count,
+    schools: quadrant.quadrant_schools.map((school) =>
+      identity<QuadrantSchoolDm>({
+        name: school.establishment.name,
+        capacity: school.establishment.capacity ?? 0,
+        type: school.establishment.type?.name ?? null,
+        urn: school.establishment.urn,
+        location: {
+          lat: school.lat,
+          lng: school.lng,
+          geohash: school.geohash,
+        },
+      })
+    ),
   };
 }
 
@@ -105,7 +134,7 @@ const QUADRANT_QUERY = `
   level,
   geohash,
   school_count,
-  bounds:bounding_boxes!bounds_id(
+  bounds:bounding_boxes!inner(
     ne_lat,
     ne_lng,
     ne_geohash,
@@ -126,4 +155,4 @@ const QUADRANT_QUERY = `
       capacity
     )
   )
-`;
+` as const;
