@@ -1,4 +1,3 @@
-import { identity } from '@lonli-lokli/core';
 import {
   FieldFilter,
   SchoolDm,
@@ -8,7 +7,7 @@ import {
 import { initializeClientSupabase } from '@lonli-lokli/supabase/setup-client';
 import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
 
-const PAGE_SIZE = 10;
+const DEFAULT_PAGE_SIZE = 20;
 
 const { supabase } = initializeClientSupabase();
 
@@ -21,7 +20,7 @@ interface GetSchoolsResult {
 export async function getSchools({
   page = 1,
   sortFields = [],
-  filters = {},
+  filters = {}
 }: {
   page: number;
   sortFields: SortField[];
@@ -126,8 +125,8 @@ export async function getSchools({
   });
 
   // Apply pagination to database query
-  const from = (page - 1) * PAGE_SIZE;
-  const to = from + PAGE_SIZE - 1;
+  const from = (page - 1) * DEFAULT_PAGE_SIZE;
+  const to = from + DEFAULT_PAGE_SIZE - 1;
   query = query.range(from, to);
 
   const { data: schools, count, error } = await query;
@@ -241,7 +240,7 @@ export async function getSchools({
       lastChanged: school.last_changed,
     })),
     total: count ?? 0,
-    pageSize: PAGE_SIZE,
+    pageSize: DEFAULT_PAGE_SIZE,
   };
 }
 

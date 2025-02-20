@@ -15,3 +15,7 @@ export const createArrayOfAll =
     array: U & ([T] extends [U[number]] ? unknown : Invalid<T>)
   ) =>
     array;
+
+export function isDefined<T>(value: T | null | undefined): value is T {
+  return value !== null && value !== undefined;
+}

@@ -1,6 +1,6 @@
 export function FooterArea() {
   return (
-    <div className="container mx-auto px-4 text-center text-gray-600">
+    <div className="hidden lg:block text-center text-gray-500 text-sm">
       © {new Date().getFullYear()} UK Schools Finder
     </div>
   );

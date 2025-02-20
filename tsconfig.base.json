@@ -18,6 +18,7 @@
     "baseUrl": ".",
     "paths": {
       "@lonli-lokli/app/components": ["apps/uk-schools-finder/src/components"],
+      "@lonli-lokli/common": ["packages/common/src/index.ts"],
       "@lonli-lokli/core": ["packages/core/src/index.ts"],
       "@lonli-lokli/data-parsers": ["packages/data-parsers/src/index.ts"],
       "@lonli-lokli/data-transformers": [

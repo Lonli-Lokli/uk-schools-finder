@@ -20,7 +20,7 @@ const SUPABASE_CONFIG = {
       : process.env['NEXT_PUBLIC_SUPABASE_URL'],
   PUBLIC_SUPABASE_KEY:
     typeof import.meta.env !== 'undefined'
-      ? import.meta.env['VITE_PUBLIC_SUPABASE_KEY']
+      ? import.meta.env['VITE_PUBLIC_SUPABASE_ANON_KEY']
       : process.env['NEXT_PUBLIC_SUPABASE_ANON_KEY'],
 };
 const initializeClientSupabase = () => {

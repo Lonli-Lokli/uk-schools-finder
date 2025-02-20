@@ -19,7 +19,7 @@ export async function SchoolsTable({
   const { schools, total, pageSize } = await getSchools({
     page: currentPage,
     sortFields,
-    filters,
+    filters
   });
   return (
     <div className="bg-white rounded-lg shadow">
