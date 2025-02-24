@@ -1,4 +1,5 @@
 import { SchoolsTable, SchoolsMap } from '../components';
+import { ControlBar } from '../components/control-bar/control-bar';
 
 type SearchParams = {
   page?: string;
@@ -14,8 +15,8 @@ export default function Page({
 }) {
   return (
     <div className="h-full overflow-hidden">
-      {/* Mobile: Map on top, fixed height table below */}
-      <div className="lg:hidden h-full grid grid-rows-[1fr_398px]">
+      {/* Mobile: Map, table, and control bar */}
+      <div className="lg:hidden h-full flex flex-col">
         <div className="relative">
           <SchoolsMap
             filter={searchParams.filter ?? ''}
@@ -31,12 +32,16 @@ export default function Page({
             />
           </div>
         </div>
+        <ControlBar />
       </div>
 
       {/* Desktop: Table on top, map fills remaining space below */}
       <div className="hidden lg:block h-full grid grid-rows-[398px_1fr] overflow-hidden">
         <div className="overflow-hidden">
           <div className="p-4 overflow-x-auto overflow-y-hidden">
+            <div className="mb-4">
+              <ControlBar />
+            </div>
             <SchoolsTable
               sort={searchParams.sort ?? ''}
               currentPage={Number(searchParams.page) || 1}

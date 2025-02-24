@@ -43,6 +43,8 @@
     "react-dom": "18.3.1",
     "react-leaflet": "4.2.1",
     "react-router-dom": "^7.1.5",
+    "supercluster": "^8.0.1",
+    "use-supercluster": "^1.2.0",
     "useismobile": "^1.0.5",
     "vite-plugin-node-polyfills": "^0.23.0",
     "zod": "^3.24.1"

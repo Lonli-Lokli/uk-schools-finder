@@ -3,16 +3,28 @@
 import { Card, Typography } from 'antd';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import {
-  MapContainer,
-  TileLayer,
-  Marker,
-  Popup,
-} from 'react-leaflet';
-import { QuadrantSchoolDm } from '@lonli-lokli/shapes';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import { GeoJSONDm, QuadrantSchoolDm } from '@lonli-lokli/shapes';
+import useSupercluster from 'use-supercluster';
 import { ViewportHandler } from './viewport-handler';
+import { useRef } from 'react';
 
 const { Title, Text } = Typography;
+
+const icons: Record<string, any> = {};
+const getClusterIcon = (count: number, size: number) => {
+  const key = `${count}-${size}`;
+  if (!icons[key]) {
+    icons[key] = L.divIcon({
+      html: `<div class="bg-blue-500 rounded-full flex items-center justify-center text-white font-bold" style="width: ${size}px; height: ${size}px;">
+        ${count}
+      </div>`,
+      className: 'cluster-marker',
+      iconSize: [size, size],
+    });
+  }
+  return icons[key];
+};
 
 // Custom icon
 const schoolIcon = L.divIcon({
@@ -24,51 +36,122 @@ const schoolIcon = L.divIcon({
 });
 
 type ClientMapProps = {
-  schools: QuadrantSchoolDm[];
+  schools: GeoJSONDm[];
   center: [number, number];
+  bounds: [number, number, number, number];
   zoom: number;
 };
 
-export function ClientMap({ schools, center, zoom }: ClientMapProps) {
+export function ClientMap({ schools, bounds, center, zoom }: ClientMapProps) {
   console.log('SCHOOLS', schools.length);
+
+  // Get clusters
+  const mapRef = useRef<L.Map>(null);
+  const { clusters, supercluster } = useSupercluster({
+    points: schools,
+    bounds,
+    zoom,
+    options: {
+      radius: 75,
+      maxZoom: 20,
+    },
+  });
   return (
     <MapContainer
       center={center}
       zoom={zoom}
+      renderer={L.canvas()}
       className="h-full w-full"
-      style={{ height: '100%' }}
+      ref={mapRef}
     >
       <ViewportHandler />
       <TileLayer
         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
         attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
       />
-      {schools.map((school) => (
-        <Marker
-          key={school.urn}
-          position={[school.location.lat, school.location.lng]}
-          icon={schoolIcon}
-        >
-          <Popup className="school-popup">
-            <Card bordered={false} className="!shadow-none">
-              <Title level={5} className="!m-0">
-                {school.name}
-              </Title>
-              {school.type && (
-                <Text type="secondary" className="block">
-                  {school.type}
-                </Text>
-              )}
+      {clusters.map((cluster) => {
+        const { cluster: isCluster } = cluster.properties;
 
-              {school.capacity && (
-                <Text type="secondary" className="block text-sm">
-                  {school.capacity} pupils
-                </Text>
-              )}
-            </Card>
-          </Popup>
-        </Marker>
-      ))}
+        if (isCluster) {
+          return (
+            <ClusterMarker
+              key={`cluster-${cluster.id}`}
+              cluster={cluster}
+              supercluster={supercluster}
+              mapRef={mapRef}
+            />
+          );
+        } else {
+          const { school } = cluster.properties;
+          return <SchoolMarker key={`school-${school.urn}`} school={school} />;
+        }
+      })}
     </MapContainer>
+  );
+}
+
+function SchoolMarker({ school }: { school: QuadrantSchoolDm }) {
+  return (
+    <Marker
+      key={school.urn}
+      position={[school.location.lat, school.location.lng]}
+      icon={schoolIcon}
+    >
+      <Popup className="school-popup">
+        <Card bordered={false} className="!shadow-none">
+          <Title level={5} className="!m-0">
+            {school.name}
+          </Title>
+          {school.type && (
+            <Text type="secondary" className="block">
+              {school.type}
+            </Text>
+          )}
+
+          {school.capacity && (
+            <Text type="secondary" className="block text-sm">
+              {school.capacity} pupils
+            </Text>
+          )}
+        </Card>
+      </Popup>
+    </Marker>
+  );
+}
+
+function ClusterMarker({
+  cluster,
+  supercluster,
+  mapRef,
+}: {
+  cluster: any;
+  supercluster: any;
+  mapRef: any;
+}) {
+  const { geometry, point_count: pointCount } = cluster;
+  const [longitude, latitude] = geometry.coordinates;
+  return (
+    <Marker
+      key={`cluster-${cluster.id}`}
+      position={[latitude, longitude]}
+      icon={getClusterIcon(
+        pointCount,
+        10 + Math.min(40, Math.log(pointCount) * 10)
+      )}
+      eventHandlers={{
+        click: () => {
+          const expansionZoom = Math.min(
+            supercluster.getClusterExpansionZoom(cluster.id),
+            20
+          );
+          const map = mapRef.current;
+          if (map) {
+            map.setView([latitude, longitude], expansionZoom, {
+              animate: true,
+            });
+          }
+        },
+      }}
+    />
   );
 }

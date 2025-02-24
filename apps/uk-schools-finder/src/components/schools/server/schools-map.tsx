@@ -1,7 +1,8 @@
 import dynamic from 'next/dynamic';
-import { getQuadrantForBounds } from '@lonli-lokli/supabase/data-access';
+import { getDefaultQuadrant } from '@lonli-lokli/supabase/data-access';
 import Geohash from 'latlon-geohash';
 import { parseFilterString } from '../utils';
+import { GeoJSONDm } from '@lonli-lokli/shapes';
 
 // Dynamically import the client-side map component with no SSR
 const ClientMap = dynamic(
@@ -42,11 +43,27 @@ export async function SchoolsMap({
   const filters = parseFilterString(filter);
 
   const bounds = getBoundsFromCenterZoom(center, zoom);
-  const quadrant = await getQuadrantForBounds({ filters, bounds });
+  const quadrant = await getDefaultQuadrant({ filters });
 
+  const points = quadrant.schools.map<GeoJSONDm>(school => ({
+    type: 'Feature' as const,
+    properties: {
+      cluster: false,
+      schoolId: school.urn,
+      school,
+    },
+    geometry: {
+      type: 'Point' as const,
+      coordinates: [
+        school.location.lng,
+        school.location.lat,
+      ] as [number, number],
+    },
+  }));
+  
   return (
     <div className="h-full w-full rounded-lg bg-white shadow">
-      <ClientMap schools={quadrant.schools} center={center} zoom={zoom} />
+      <ClientMap schools={points} bounds={bounds} center={center} zoom={zoom} />
     </div>
   );
 }
@@ -58,14 +75,11 @@ function getBoundsFromCenterZoom(center: [number, number], zoom: number) {
   const tileSize = 360 / Math.pow(2, zoom);
   const [lat, lng] = center;
   
-  return {
-    ne: { 
-      lat: lat + tileSize/2, 
-      lng: lng + tileSize/2 
-    },
-    sw: { 
-      lat: lat - tileSize/2, 
-      lng: lng - tileSize/2 
-    }
-  };
+  // Return bounds as [westLng, southLat, eastLng, northLat]
+  return [
+    lng - tileSize/2,  // westLng
+    lat - tileSize/2,  // southLat
+    lng + tileSize/2,  // eastLng
+    lat + tileSize/2   // northLat
+  ] as [number, number, number, number];
 }

@@ -136,7 +136,7 @@ export function ClientTable({
       <Space size="large" direction="vertical" style={{ width: '100%' }}>
         <Row align="middle" justify="end">
           <Col>
-            <PropertyFilter />
+            <ColumnsFilter />
           </Col>
         </Row>
       </Space>
@@ -158,7 +158,7 @@ const onSelectAllClicked = () => {
   selectAllClicked();
 };
 
-const PropertyFilter: FC = () => {
+const ColumnsFilter: FC = () => {
   const { allColumnState, columns } = useUnit($viewModel);
   const content = (
     <div className="max-h-[60vh] overflow-auto">

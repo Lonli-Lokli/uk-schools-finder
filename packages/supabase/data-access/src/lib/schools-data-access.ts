@@ -7,7 +7,7 @@ import {
 import { initializeClientSupabase } from '@lonli-lokli/supabase/setup-client';
 import { PostgrestFilterBuilder } from '@supabase/postgrest-js';
 
-const DEFAULT_PAGE_SIZE = 20;
+const DEFAULT_PAGE_SIZE = 10;
 
 const { supabase } = initializeClientSupabase();
 

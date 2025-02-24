@@ -1,3 +1,5 @@
+import { QuadrantSchoolDm } from './shapes';
+
 export type DeepNamePath<
   Store,
   ParentNamePath extends any[] = [],
@@ -35,3 +37,16 @@ export type DeepNamePath<
               >;
     }[keyof Store]
   : never;
+
+export type GeoJSONDm = {
+  type: 'Feature';
+  properties: {
+    cluster: boolean;
+    schoolId: string;
+    school: QuadrantSchoolDm;
+  };
+  geometry: {
+    type: 'Point';
+    coordinates: [number, number];
+  };
+};

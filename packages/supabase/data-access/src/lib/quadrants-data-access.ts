@@ -86,7 +86,11 @@ export async function getQuadrantForBounds({
   };
 }
 
-async function getDefaultQuadrant(): Promise<QuadrantDm> {
+export async function getDefaultQuadrant({
+  filters,
+}: {
+  filters: SchoolFilters;
+}): Promise<QuadrantDm> {
   const { data: quadrant, error } = await supabase
     .from('quadrants')
     .select(QUADRANT_QUERY)
